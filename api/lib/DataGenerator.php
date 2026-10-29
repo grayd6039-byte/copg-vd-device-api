@@ -173,7 +173,7 @@ class DataGenerator
         $brand = $p['brand'];
         $model = $p['model'];
         $manufacturer = $p['manufacturer'] ?? $brand;
-        $deviceCode = strtolower($p['device_code'] ?? $this->slugify($model));
+        $deviceCode = preg_replace('/[^a-z0-9_]/', '_', strtolower($p['device_code'] ?? $this->slugify($model)));
 
         // Build ID and display
         $buildId = $this->buildId;

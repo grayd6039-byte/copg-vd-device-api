@@ -227,7 +227,7 @@ curl -s "https://your-domain.com/api.php"
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `api_key` | `copg-vd-2026` | API 鉴权密钥，设为 `''` 则无需鉴权 |
+| `api_key` | `mecg-so-2026` | API 鉴权密钥，设为 `''` 则无需鉴权 |
 | `data_dir` | `__DIR__ . '/data'` | 数据目录（需可写） |
 | `scraper.enabled` | `false` | 是否启用 GSMArena 爬虫（Vercel 只读文件系统下必须关闭） |
 | `scraper.timeout` | `15` | 爬虫请求超时（秒） |

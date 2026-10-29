@@ -6,7 +6,7 @@
 
 return [
     // API authentication key (empty string = no auth required)
-    'api_key' => 'copg-vd-2026',
+    'api_key' => 'mecg-so-2026',
 
     // Data directory (absolute path, must be writable by PHP)
     'data_dir' => __DIR__ . '/data',

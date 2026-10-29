@@ -568,7 +568,7 @@ class DataGenerator
     private function generateIccid(): string
     {
         $iin = (string)random_int(1, 9);
-        $nationalIdLength = random_int(14, 15);
+        $nationalIdLength = random_int(15, 16);
         $nationalId = '';
         for ($i = 0; $i < $nationalIdLength; $i++) {
             $nationalId .= (string)random_int(0, 9);

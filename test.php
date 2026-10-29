@@ -7,11 +7,11 @@
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
-require_once __DIR__ . '/lib/PhoneDatabase.php';
-require_once __DIR__ . '/lib/DataGenerator.php';
-require_once __DIR__ . '/lib/JsonValidator.php';
+require_once __DIR__ . '/api/lib/PhoneDatabase.php';
+require_once __DIR__ . '/api/lib/DataGenerator.php';
+require_once __DIR__ . '/api/lib/JsonValidator.php';
 
-$config = require __DIR__ . '/config.php';
+$config = require __DIR__ . '/api/config.php';
 $dataDir = $config['data_dir'];
 $scraperConfig = $config['scraper'];
 $apiLevels = $config['android_versions'];

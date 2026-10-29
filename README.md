@@ -25,20 +25,23 @@
 
 ```
 /www/wwwroot/your-domain.com/
-├── api.php
-├── config.php
-├── lib/
-│   ├── DataGenerator.php
-│   ├── JsonValidator.php
-│   └── PhoneDatabase.php
-├── data/
-│   └── phones.json
+├── api.php                 # 兼容入口，转发到 api/index.php
+├── vercel.json             # Vercel 部署配置
+├── api/
+│   ├── index.php           # 主入口（全部逻辑）
+│   ├── config.php
+│   ├── lib/
+│   │   ├── DataGenerator.php
+│   │   ├── JsonValidator.php
+│   │   └── PhoneDatabase.php
+│   └── data/
+│       └── phones.json
 └── README.md
 ```
 
 ### 2. 配置 API Key
 
-编辑 `config.php`，修改 `api_key` 字段：
+编辑 `api/config.php`，修改 `api_key` 字段：
 
 ```php
 'api_key' => 'your-secret-key',  // 设为空字符串 '' 则无需鉴权
@@ -46,11 +49,11 @@
 
 ### 3. 设置目录权限
 
-确保 `data/` 目录可写（PHP 需要写入缓存文件）：
+确保 `api/data/` 目录可写（PHP 需要写入缓存文件）：
 
 ```bash
-chmod -R 755 /www/wwwroot/your-domain.com/data/
-chown -R www:www /www/wwwroot/your-domain.com/data/
+chmod -R 755 /www/wwwroot/your-domain.com/api/data/
+chown -R www:www /www/wwwroot/your-domain.com/api/data/
 ```
 
 ### 4. 配置 Nginx（宝塔面板）
@@ -71,6 +74,16 @@ location /api {
 ### 5. 验证部署
 
 访问 `https://your-domain.com/api.php`，应返回完整的 COPG-VD JSON。
+
+### 6. 部署到 Vercel（可选）
+
+Vercel 无原生 PHP 运行时，本项目已通过 `vercel.json` 指定 `vercel-php` 运行时，函数目录为 `api/`：
+
+1. 将仓库导入 Vercel（Import Git Repository）
+2. Framework Preset 选 **Other**，无需 Build Command / Output Directory
+3. 部署完成后访问 `https://<项目名>.vercel.app/api`（根路径 `/` 已重写到该函数）
+
+注意：Vercel 文件系统只读，仅 `/tmp` 可写，因此 `api/config.php` 中 `scraper.enabled` 已设为 `false`，手机数据始终使用内置 `api/data/phones.json`。
 
 ## 接口调用示例
 
@@ -197,11 +210,11 @@ curl -s "https://your-domain.com/api.php"
 
 ### 内置数据库
 
-`data/phones.json` 包含精选的安卓手机列表（Google Pixel、Samsung Galaxy、Xiaomi、OnePlus、OPPO、Vivo、Motorola、Sony、Huawei、Honor、Nothing、ASUS、Realme、LG），共 60+ 款机型。平板设备已全部过滤。
+`api/data/phones.json` 包含精选的安卓手机列表（Google Pixel、Samsung Galaxy、Xiaomi、OnePlus、OPPO、Vivo、Motorola、Sony、Huawei、Honor、Nothing、ASUS、Realme、LG），共 60+ 款机型。平板设备已全部过滤。
 
 ### GSMArena 爬虫
 
-`lib/PhoneDatabase.php` 内置 GSMArena 爬虫，尝试从 `https://www.gsmarena.com/results.php3?sMakers={brand}` 抓取各品牌手机列表。
+`api/lib/PhoneDatabase.php` 内置 GSMArena 爬虫，尝试从 `https://www.gsmarena.com/results.php3?sMakers={brand}` 抓取各品牌手机列表。
 
 - **Cloudflare 绕过**：检测 "One quick check" 页面，遇到挑战时静默回退到内置数据库
 - **平板过滤**：通过关键词匹配（tab、pad、tablet、ipad 等）过滤平板设备
@@ -210,13 +223,13 @@ curl -s "https://your-domain.com/api.php"
 
 ## 配置项说明
 
-`config.php` 中的配置项：
+`api/config.php` 中的配置项：
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
 | `api_key` | `copg-vd-2026` | API 鉴权密钥，设为 `''` 则无需鉴权 |
 | `data_dir` | `__DIR__ . '/data'` | 数据目录（需可写） |
-| `scraper.enabled` | `true` | 是否启用 GSMArena 爬虫 |
+| `scraper.enabled` | `false` | 是否启用 GSMArena 爬虫（Vercel 只读文件系统下必须关闭） |
 | `scraper.timeout` | `15` | 爬虫请求超时（秒） |
 | `scraper.cache_ttl` | `86400` | 缓存有效期（秒） |
 | `scraper.user_agent` | Chrome UA | 爬虫 User-Agent |
@@ -228,15 +241,15 @@ curl -s "https://your-domain.com/api.php"
 
 ### Q: 如何关闭 GSMArena 爬虫？
 
-编辑 `config.php`，将 `scraper.enabled` 设为 `false`。
+编辑 `api/config.php`，将 `scraper.enabled` 设为 `false`。
 
 ### Q: 如何修改 API Key？
 
-编辑 `config.php`，修改 `api_key` 字段。设为空字符串 `''` 则无需鉴权。
+编辑 `api/config.php`，修改 `api_key` 字段。设为空字符串 `''` 则无需鉴权。
 
 ### Q: 如何添加更多手机型号？
 
-编辑 `data/phones.json`，按照现有格式添加新的手机记录。每个记录包含 `brand`、`manufacturer`、`model`、`device_code` 四个字段。
+编辑 `api/data/phones.json`，按照现有格式添加新的手机记录。每个记录包含 `brand`、`manufacturer`、`model`、`device_code` 四个字段。
 
 ### Q: 如何验证 JSON 格式正确性？
 

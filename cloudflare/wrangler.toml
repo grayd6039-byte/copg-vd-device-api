@@ -1,0 +1,12 @@
+# Cloudflare Workers 部署配置
+# 部署：wrangler deploy（在本目录执行）
+
+name = "mecg-so-device-api"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+# 可选：用 Secret 覆盖 api_key（不设置则回落到 config.php 中的 mecg-so-2026）
+# 设置方式：wrangler secret put API_KEY
+# 若希望免鉴权访问，可设置普通变量 API_KEY = ""（空字符串）
+
+# 未使用 Node API，无需 nodejs_compat 兼容标志

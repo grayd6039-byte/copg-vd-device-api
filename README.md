@@ -161,16 +161,28 @@ npx wrangler secret put API_KEY        # 输入新 Key 后回车（推荐）
 
 ### 地理定位（IP → 国家区号）
 
-PHP 版本调用 ipgeolocation.io 获取 `calling_code` 来决定 `PHONE_NUMBER` 的国家区号。Workers 版本改为读取 Cloudflare 自带的 `request.cf`（`country` / `latitude` / `longitude` 等），**不发起任何外部请求**：
+地理接口已从 `https://api.ipgeolocation.io/ipgeo?apiKey=...` 切换为 **`https://ip.yowao.xyz/ipgeo`**。该接口返回 ipgeolocation.io 兼容结构，但不含 `calling_code` 字段，因此按 `country_code2` 走 ISO 映射表得到国际区号。
 
-- `cf.country` → ISO 区号映射表 → 国际区号 → 号码位数 → `PHONE_NUMBER`（与 PHP 行为等价）
-- `cf.latitude` / `cf.longitude` → 填充 `phone.latitude` / `phone.longitude`（PHP 版本这两个字段恒为空字符串）
-- `request.cf` 缺失（如本地 `wrangler dev` 无 cf 数据）时：区号回退到 `+1`/10 位或按 PHP 的 8 国随机列表生成，经纬度回退为空字符串，不会报错
+Workers 版本的处理顺序：
+
+1. 取 `CF-Connecting-IP`，请求 `https://ip.yowao.xyz/ipgeo?ip=<IP>`（超时 3 秒，同一 IP 结果缓存 1 小时）
+2. 用返回的 `country_code2` 查 `CALLING_CODE_BY_ISO` → 国际区号 → 号码位数 → `PHONE_NUMBER`；`latitude` / `longitude` 填入 `phone.latitude` / `phone.longitude`
+3. 接口失败或字段为空时回退 Cloudflare `request.cf`（`country` / `latitude` / `longitude`）
+4. 两者都不可用（如本地 `wrangler dev`）时：区号回退 `+1`/10 位或按 8 国随机列表生成，经纬度为空字符串，不会报错
+
+### 浏览器版本（User-Agent）
+
+`hardware.UserAgent` 中的 Chrome 版本只取**最新 3 个主版本**，并自动跟随官方稳定版升级：
+
+- 每 6 小时探测一次 `chrome-for-testing` 的 Stable 版本号，主版本号变大后自动切换窗口
+- 当前兜底最新版为 `158` → 生成 `156 / 157 / 158`；官方升到 `159` 后自动变为 `157 / 158 / 159`
+- 完整版本形如 `<主版本>.0.<构建号 3000-8999>.<修订号 0-199>`，如 `157.0.6521.87`
+- 探测失败时保持兜底值，不影响接口可用性
 
 ### 与 PHP 版本的行为差异
 
 1. 不移植 GSMArena 爬虫与 `phones_cache.json` 磁盘缓存（Workers 无文件系统），始终使用内联的 70 条手机数据。
-2. `phone.latitude` / `phone.longitude` 由 `request.cf` 填充（PHP 恒为空）。
+2. `phone.latitude` / `phone.longitude` 由地理接口 / `request.cf` 填充（PHP 恒为空）。
 3. 随机数改用 `crypto.getRandomValues` + 拒绝采样，分布与 PHP `random_int` 一致（不使用 `Math.random`）。
 4. JSON 格式化：PHP 会转义 `/`（`\/`），Worker 不转义；解析结果完全相同。
 

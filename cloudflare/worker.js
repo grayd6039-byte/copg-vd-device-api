@@ -23,6 +23,19 @@ const CORS_ORIGIN = '*';                      // config.php => cors.origin
 const GEO_FALLBACK_COUNTRY_CODE = '+1';       // config.php => ip_geolocation.fallback_country_code
 const GEO_FALLBACK_NATIONAL_LEN = 10;         // config.php => ip_geolocation.fallback_national_len
 
+/* IP 地理定位接口（替代原 ipgeolocation.io；返回 ipgeolocation.io 兼容结构，但无 calling_code 字段） */
+const GEO_API_URL = 'https://ip.yowao.xyz/ipgeo';
+const GEO_API_TIMEOUT_MS = 3000;
+const GEO_CACHE_TTL_MS = 60 * 60 * 1000;      // 同一 IP 的地理结果缓存 1 小时
+const GEO_CACHE_MAX = 500;
+
+/* 浏览器版本：自动探测 Chrome 稳定版，只保留最新 3 个主版本 */
+const CHROME_STABLE_LATEST_FALLBACK = 158;    // 探测失败时的兜底最新主版本
+const CHROME_VERSION_WINDOW = 3;              // 保留最新 3 个主版本
+const CHROME_VERSION_SOURCE =
+  'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json';
+const CHROME_VERSION_TTL_MS = 6 * 60 * 60 * 1000;  // 每 6 小时检查一次是否升级
+
 /* ============================================================
  * 手机数据库（内联自 api/data/phones.json，70 条，原样保留）
  * ============================================================ */
@@ -697,9 +710,39 @@ function generateSdsdkid() {
   return randomHex(32);
 }
 
+/* 模块级状态：Chrome 最新稳定版主版本号（探测结果，按 6 小时 TTL 刷新） */
+let chromeLatestMajor = CHROME_STABLE_LATEST_FALLBACK;
+let chromeLatestCheckedAt = 0;
+
+/* 探测 Chrome 稳定版最新主版本；失败时保持兜底值，不影响出参 */
+async function refreshChromeLatestVersion() {
+  const now = Date.now();
+  if (now - chromeLatestCheckedAt < CHROME_VERSION_TTL_MS) return;
+  chromeLatestCheckedAt = now;
+  try {
+    const resp = await fetch(CHROME_VERSION_SOURCE, {
+      signal: AbortSignal.timeout(2500),
+      cf: { cacheTtl: 3600 }
+    });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const stable = data && data.channels && data.channels.Stable
+      ? data.channels.Stable.version : '';
+    const major = parseInt(String(stable).split('.')[0], 10);
+    if (isFinite(major) && major > chromeLatestMajor) chromeLatestMajor = major;
+  } catch (e) {
+    /* 网络/解析失败：保持当前值继续服务 */
+  }
+}
+
+/* 只在最新 3 个主版本中随机（如最新 158 -> 156/157/158；升到 159 -> 157/158/159） */
 function generateChromeVersion() {
-  const major = randInt(120, 130);
-  const build = randInt(0, 6999);
+  const majors = [];
+  for (let i = CHROME_VERSION_WINDOW - 1; i >= 0; i--) {
+    majors.push(chromeLatestMajor - i);
+  }
+  const major = randChoice(majors);
+  const build = randInt(3000, 8999);
   const patch = randInt(0, 199);
   return String(major) + '.0.' + String(build) + '.' + String(patch);
 }
@@ -1272,37 +1315,80 @@ function validateJsonSyntax(jsonString) {
 }
 
 /* ============================================================
- * 地理定位（request.cf，绝不请求外部服务）
+ * 地理定位（ip.yowao.xyz/ipgeo，失败回退 Cloudflare request.cf）
  * ============================================================ */
 
-function resolveGeo(request) {
-  const cf = request && request.cf ? request.cf : null;
-  if (!cf) return null; // 无 cf：等价 PHP 地理定位失败 -> 随机国家 + 空经纬度
+const geoCache = new Map();
 
-  let callingCode = GEO_FALLBACK_COUNTRY_CODE;
-  if (typeof cf.country === 'string' && cf.country !== '') {
-    const iso = cf.country.toUpperCase();
-    if (Object.prototype.hasOwnProperty.call(CALLING_CODE_BY_ISO, iso)) {
-      callingCode = CALLING_CODE_BY_ISO[iso];
+/* 请求外部地理接口（按客户端 IP），结果缓存 1 小时；失败返回 null */
+async function fetchGeoApi(ip) {
+  const cached = geoCache.get(ip);
+  if (cached && Date.now() - cached.at < GEO_CACHE_TTL_MS) return cached.value;
+
+  let value = null;
+  try {
+    const resp = await fetch(GEO_API_URL + '?ip=' + encodeURIComponent(ip), {
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(GEO_API_TIMEOUT_MS),
+      cf: { cacheTtl: 600 }
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      value = {
+        iso: typeof data.country_code2 === 'string' ? data.country_code2.toUpperCase() : '',
+        latitude: typeof data.latitude === 'number' ? data.latitude.toFixed(4) : '',
+        longitude: typeof data.longitude === 'number' ? data.longitude.toFixed(4) : '',
+        country: typeof data.country_name === 'string' ? data.country_name : '',
+        city: typeof data.city === 'string' ? data.city : '',
+        region: typeof data.state_prov === 'string' ? data.state_prov : ''
+      };
     }
+  } catch (e) {
+    value = null;
   }
 
-  let latitude = '';
-  let longitude = '';
-  if (typeof cf.latitude === 'number' && isFinite(cf.latitude)) latitude = cf.latitude.toFixed(4);
-  if (typeof cf.longitude === 'number' && isFinite(cf.longitude)) longitude = cf.longitude.toFixed(4);
+  if (geoCache.size >= GEO_CACHE_MAX) geoCache.clear();
+  geoCache.set(ip, { at: Date.now(), value: value });
+  return value;
+}
+
+async function resolveGeo(request) {
+  const cf = request && request.cf ? request.cf : null;
+  const headers = request && request.headers ? request.headers : null;
+  const clientIp = headers ? (headers.get('CF-Connecting-IP') || '') : '';
+  const api = clientIp !== '' ? await fetchGeoApi(clientIp) : null;
+
+  if (!cf && !api) return null; // 两条来源都不可用：等价 PHP 地理定位失败
+
+  const cfIso = (cf && typeof cf.country === 'string' && cf.country !== '')
+    ? cf.country.toUpperCase() : '';
+  const iso = (api && api.iso) ? api.iso : cfIso;
+
+  let callingCode = GEO_FALLBACK_COUNTRY_CODE;
+  if (iso !== '' && Object.prototype.hasOwnProperty.call(CALLING_CODE_BY_ISO, iso)) {
+    callingCode = CALLING_CODE_BY_ISO[iso];
+  }
+
+  let latitude = (api && api.latitude) ? api.latitude : '';
+  let longitude = (api && api.longitude) ? api.longitude : '';
+  if (latitude === '' && cf && typeof cf.latitude === 'number' && isFinite(cf.latitude)) {
+    latitude = cf.latitude.toFixed(4);
+  }
+  if (longitude === '' && cf && typeof cf.longitude === 'number' && isFinite(cf.longitude)) {
+    longitude = cf.longitude.toFixed(4);
+  }
 
   return {
     callingCode: callingCode,
     nationalLen: getNationalLength(callingCode),
     latitude: latitude,
     longitude: longitude,
-    country: typeof cf.country === 'string' ? cf.country : '',
-    city: typeof cf.city === 'string' ? cf.city : '',
-    region: typeof cf.region === 'string' ? cf.region : '',
-    timezone: typeof cf.timezone === 'string' ? cf.timezone : '',
-    asn: cf.asn === undefined ? '' : cf.asn,
-    colo: typeof cf.colo === 'string' ? cf.colo : ''
+    country: (api && api.country) ? api.country : (typeof cf.country === 'string' ? cf.country : ''),
+    city: (api && api.city) ? api.city : (cf && typeof cf.city === 'string' ? cf.city : ''),
+    region: (api && api.region) ? api.region : (cf && typeof cf.region === 'string' ? cf.region : ''),
+    timezone: (cf && typeof cf.timezone === 'string') ? cf.timezone : '',
+    asn: (cf && cf.asn !== undefined) ? cf.asn : '',
+    colo: (cf && typeof cf.colo === 'string') ? cf.colo : ''
   };
 }
 
@@ -1375,9 +1461,11 @@ async function handleRequest(request, env) {
   const debug = url.searchParams.get('debug') === '1';
 
   try {
+    await refreshChromeLatestVersion();
+
     const phone = randChoice(PHONES);
     const apiLevel = randChoice(ANDROID_VERSIONS);
-    const geo = resolveGeo(request);
+    const geo = await resolveGeo(request);
 
     const g = createGeneratorState(phone, apiLevel, geo);
     const result = generate(g);
@@ -1398,6 +1486,8 @@ async function handleRequest(request, env) {
         response.debug = {
           phone_used: phone,
           api_level: apiLevel,
+          chrome_latest_major: chromeLatestMajor,
+          geo: geo,
           generated_at: isoNow()
         };
       }
@@ -1411,6 +1501,8 @@ async function handleRequest(request, env) {
         debug: {
           phone_used: phone,
           api_level: apiLevel,
+          chrome_latest_major: chromeLatestMajor,
+          geo: geo,
           generated_at: isoNow()
         }
       }, 200);

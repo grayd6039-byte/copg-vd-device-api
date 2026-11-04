@@ -28,11 +28,13 @@ return [
         'origin' => '*',
     ],
 
-    // IP GeoLocation API (ipgeolocation.io)
+    // IP GeoLocation API（已由 ipgeolocation.io 切换为 ip.yowao.xyz）
+    // 注意：新接口返回 country_code2 / latitude / longitude，但不返回 calling_code，
+    // PHP 版无法从中解析区号，会退回默认区号；线上以 Cloudflare Worker（cloudflare/worker.js）为准。
     'ip_geolocation' => [
-        'enabled' => true,
-        'api_key' => '14fecfcafbdb42728cf10c9d24ec0c4e',
-        'api_url' => 'https://api.ipgeolocation.io/ipgeo',
+        'enabled' => false,
+        'api_key' => '',
+        'api_url' => 'https://ip.yowao.xyz/ipgeo',
         'timeout' => 5,           // seconds
         'fallback_country_code' => '+1',  // fallback if API fails
         'fallback_national_len' => 10,

@@ -29,12 +29,26 @@ const GEO_API_TIMEOUT_MS = 3000;
 const GEO_CACHE_TTL_MS = 60 * 60 * 1000;      // 同一 IP 的地理结果缓存 1 小时
 const GEO_CACHE_MAX = 500;
 
-/* 浏览器版本：自动探测 Chrome 稳定版，只保留最新 3 个主版本 */
-const CHROME_STABLE_LATEST_FALLBACK = 158;    // 探测失败时的兜底最新主版本
-const CHROME_VERSION_WINDOW = 3;              // 保留最新 3 个主版本
-const CHROME_VERSION_SOURCE =
-  'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json';
-const CHROME_VERSION_TTL_MS = 6 * 60 * 60 * 1000;  // 每 6 小时检查一次是否升级
+/* 内核版本：一律使用 Android System WebView 真实稳定构建号（不再随机编造 build/patch）
+ * 数据源 chromiumdash 的 Webview 频道，只采集官方实际发布过的版本 */
+const WEBVIEW_VERSION_SOURCE =
+  'https://chromiumdash.appspot.com/fetch_releases?channel=Stable&platform=Webview&num=100';
+const WEBVIEW_KEEP_MILESTONES = 4;             // 始终保留最新 4 个主版本（采到新的就丢掉最低的）
+const WEBVIEW_MAX_PATCHES = 12;                // 每个主版本最多保留 12 个真实补丁号
+const WEBVIEW_VERSION_TTL_MS = 6 * 60 * 60 * 1000;   // 每 6 小时检查一次是否有新版本
+const WEBVIEW_CACHE_KEY = 'https://mecg-so-webview-cache.internal/versions.json';
+
+/* 兜底种子：当前官方稳定版 M154-M157（与 chromiumdash 一致）。
+ * 采集失败时直接用它，保证出参永远是真实内核版本号。 */
+const WEBVIEW_VERSION_SEED = {
+  154: ['154.0.8037.22', '154.0.8037.49', '154.0.8037.57', '154.0.8037.58',
+        '154.0.8037.59', '154.0.8037.101', '154.0.8037.106', '154.0.8037.107'],
+  155: ['155.0.8059.16', '155.0.8059.30', '155.0.8059.43', '155.0.8059.44',
+        '155.0.8059.45', '155.0.8059.46'],
+  156: ['156.0.8078.25', '156.0.8078.39', '156.0.8078.47', '156.0.8078.48',
+        '156.0.8078.49', '156.0.8078.50'],
+  157: ['157.0.8103.14', '157.0.8103.30', '157.0.8103.38']
+};
 
 /* ============================================================
  * 手机数据库（内联自 api/data/phones.json，70 条，原样保留）
@@ -710,41 +724,133 @@ function generateSdsdkid() {
   return randomHex(32);
 }
 
-/* 模块级状态：Chrome 最新稳定版主版本号（探测结果，按 6 小时 TTL 刷新） */
-let chromeLatestMajor = CHROME_STABLE_LATEST_FALLBACK;
-let chromeLatestCheckedAt = 0;
+/* ============================================================
+ * 内核版本采集：只保留最新 4 个主版本，且只保留官方真实构建号
+ * ============================================================ */
 
-/* 探测 Chrome 稳定版最新主版本；失败时保持兜底值，不影响出参 */
-async function refreshChromeLatestVersion() {
-  const now = Date.now();
-  if (now - chromeLatestCheckedAt < CHROME_VERSION_TTL_MS) return;
-  chromeLatestCheckedAt = now;
+let webviewState = null;        // { milestones: {154: [...], ...}, updatedAt: 0 }
+let webviewCheckedAt = 0;       // 上次探测时间（isolate 级，防雪崩）
+
+function webviewPatchOf(version) {
+  const parts = String(version).split('.');
+  return parts.length === 4 ? parseInt(parts[3], 10) || 0 : 0;
+}
+
+/* 归一化：按主版本升序，只留最新 4 个主版本；每个主版本去重、按补丁号升序、截断到 12 条 */
+function normalizeWebViewMilestones(map) {
+  const majors = Object.keys(map)
+    .map(function (k) { return parseInt(k, 10); })
+    .filter(isFinite)
+    .sort(function (a, b) { return a - b; })
+    .slice(-WEBVIEW_KEEP_MILESTONES);
+
+  const out = {};
+  majors.forEach(function (major) {
+    const list = Array.from(new Set(map[String(major)] || []))
+      .filter(function (v) { return String(v).indexOf(String(major) + '.') === 0; })
+      .sort(function (a, b) { return webviewPatchOf(a) - webviewPatchOf(b); });
+    if (list.length > 0) out[String(major)] = list.slice(-WEBVIEW_MAX_PATCHES);
+  });
+  return out;
+}
+
+function seedWebViewMilestones() {
+  const out = {};
+  Object.keys(WEBVIEW_VERSION_SEED).forEach(function (k) {
+    out[k] = WEBVIEW_VERSION_SEED[k].slice();
+  });
+  return normalizeWebViewMilestones(out);
+}
+
+async function readWebViewCache() {
   try {
-    const resp = await fetch(CHROME_VERSION_SOURCE, {
-      signal: AbortSignal.timeout(2500),
-      cf: { cacheTtl: 3600 }
-    });
-    if (!resp.ok) return;
+    if (typeof caches === 'undefined' || !caches.default) return null;
+    const resp = await caches.default.match(new Request(WEBVIEW_CACHE_KEY));
+    if (!resp) return null;
     const data = await resp.json();
-    const stable = data && data.channels && data.channels.Stable
-      ? data.channels.Stable.version : '';
-    const major = parseInt(String(stable).split('.')[0], 10);
-    if (isFinite(major) && major > chromeLatestMajor) chromeLatestMajor = major;
+    if (!data || typeof data !== 'object' || !data.milestones) return null;
+    const milestones = normalizeWebViewMilestones(data.milestones);
+    if (Object.keys(milestones).length === 0) return null;
+    return { milestones: milestones, updatedAt: data.updated_at || 0 };
   } catch (e) {
-    /* 网络/解析失败：保持当前值继续服务 */
+    return null;
   }
 }
 
-/* 只在最新 3 个主版本中随机（如最新 158 -> 156/157/158；升到 159 -> 157/158/159） */
-function generateChromeVersion() {
-  const majors = [];
-  for (let i = CHROME_VERSION_WINDOW - 1; i >= 0; i--) {
-    majors.push(chromeLatestMajor - i);
+/* 写入 Cache API，跨 isolate / 跨 colo 共享采集结果（TTL 6 小时） */
+async function writeWebViewCache(state) {
+  try {
+    if (typeof caches === 'undefined' || !caches.default) return;
+    const body = JSON.stringify({
+      milestones: state.milestones,
+      updated_at: state.updatedAt
+    });
+    await caches.default.put(new Request(WEBVIEW_CACHE_KEY), new Response(body, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'max-age=' + Math.floor(WEBVIEW_VERSION_TTL_MS / 1000)
+      }
+    }));
+  } catch (e) {
+    /* 缓存不可用时忽略：内存状态仍生效 */
   }
+}
+
+/* 定期采集 WebView 稳定版：有新版本才更新（采一条最新的、丢掉最低主版本），无更新不写入 */
+async function refreshWebViewVersions() {
+  const now = Date.now();
+
+  if (!webviewState) {
+    webviewState = (await readWebViewCache()) || { milestones: seedWebViewMilestones(), updatedAt: 0 };
+  }
+  if (now - webviewCheckedAt < WEBVIEW_VERSION_TTL_MS) return;
+  webviewCheckedAt = now;
+
+  let releases = null;
+  try {
+    const resp = await fetch(WEBVIEW_VERSION_SOURCE, {
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(3000),
+      cf: { cacheTtl: 1800 }
+    });
+    if (resp.ok) releases = await resp.json();
+  } catch (e) {
+    releases = null;
+  }
+  if (!Array.isArray(releases) || releases.length === 0) return;   // 采集失败：保持现有版本
+
+  const merged = {};
+  Object.keys(webviewState.milestones).forEach(function (k) {
+    merged[k] = webviewState.milestones[k].slice();
+  });
+
+  releases.forEach(function (item) {
+    const version = item && typeof item.version === 'string' ? item.version : '';
+    const major = parseInt(version.split('.')[0], 10);
+    if (!isFinite(major) || major < 100 || version.split('.').length !== 4) return;
+    const key = String(major);
+    if (!merged[key]) merged[key] = [];
+    if (merged[key].indexOf(version) === -1) merged[key].push(version);
+  });
+
+  /* 归一化后与现有集合完全一致 -> 说明没有更新，不写入、不改变出参 */
+  const next = normalizeWebViewMilestones(merged);
+  if (JSON.stringify(next) === JSON.stringify(webviewState.milestones)) return;
+
+  webviewState = { milestones: next, updatedAt: now };
+  await writeWebViewCache(webviewState);
+}
+
+/* 在已采集的真实构建号中随机（当前 M154-M157；升到 M158 后自动变为 M155-M158） */
+function generateChromeVersion() {
+  const milestones = webviewState ? webviewState.milestones : seedWebViewMilestones();
+  const majors = Object.keys(milestones);
+  if (majors.length === 0) return '157.0.8103.38';
+
   const major = randChoice(majors);
-  const build = randInt(3000, 8999);
-  const patch = randInt(0, 199);
-  return String(major) + '.0.' + String(build) + '.' + String(patch);
+  const list = milestones[major] || [];
+  if (list.length === 0) return '157.0.8103.38';
+  return randChoice(list);
 }
 
 function generateCpuInfo(phone) {
@@ -1461,7 +1567,7 @@ async function handleRequest(request, env) {
   const debug = url.searchParams.get('debug') === '1';
 
   try {
-    await refreshChromeLatestVersion();
+    await refreshWebViewVersions();
 
     const phone = randChoice(PHONES);
     const apiLevel = randChoice(ANDROID_VERSIONS);
@@ -1486,7 +1592,8 @@ async function handleRequest(request, env) {
         response.debug = {
           phone_used: phone,
           api_level: apiLevel,
-          chrome_latest_major: chromeLatestMajor,
+          webview_versions: webviewState ? webviewState.milestones : seedWebViewMilestones(),
+          webview_updated_at: webviewState ? webviewState.updatedAt : 0,
           geo: geo,
           generated_at: isoNow()
         };
@@ -1501,7 +1608,8 @@ async function handleRequest(request, env) {
         debug: {
           phone_used: phone,
           api_level: apiLevel,
-          chrome_latest_major: chromeLatestMajor,
+          webview_versions: webviewState ? webviewState.milestones : seedWebViewMilestones(),
+          webview_updated_at: webviewState ? webviewState.updatedAt : 0,
           geo: geo,
           generated_at: isoNow()
         }

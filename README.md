@@ -170,14 +170,20 @@ Workers 版本的处理顺序：
 3. 接口失败或字段为空时回退 Cloudflare `request.cf`（`country` / `latitude` / `longitude`）
 4. 两者都不可用（如本地 `wrangler dev`）时：区号回退 `+1`/10 位或按 8 国随机列表生成，经纬度为空字符串，不会报错
 
-### 浏览器版本（User-Agent）
+### 内核版本（User-Agent）
 
-`hardware.UserAgent` 中的 Chrome 版本只取**最新 3 个主版本**，并自动跟随官方稳定版升级：
+`hardware.UserAgent` 里的 Chrome 版本一律使用 **Android System WebView 的真实稳定构建号**，不再随机编造 build/patch：
 
-- 每 6 小时探测一次 `chrome-for-testing` 的 Stable 版本号，主版本号变大后自动切换窗口
-- 当前兜底最新版为 `158` → 生成 `156 / 157 / 158`；官方升到 `159` 后自动变为 `157 / 158 / 159`
-- 完整版本形如 `<主版本>.0.<构建号 3000-8999>.<修订号 0-199>`，如 `157.0.6521.87`
-- 探测失败时保持兜底值，不影响接口可用性
+- 当前为 M154-M157 四个主版本，例如 `157.0.8103.38`、`156.0.8078.50`、`155.0.8059.46`、`154.0.8037.59`
+- 每个主版本只使用官方实际发布过的补丁号（M154 8 个、M155 6 个、M156 6 个、M157 3 个）
+- 每 6 小时从 `https://chromiumdash.appspot.com/fetch_releases?channel=Stable&platform=Webview&num=100` 采集一次
+- 采集规则：只保留最新 4 个主版本；出现新主版本时自动加入并丢掉最低的那个（如官方发布 M158，则窗口变为 M155-M158）
+- 采集结果与上次一致时不写入（没有更新就不采集）；有变化才写入 Cloudflare Cache API（6 小时 TTL，跨节点共享）
+- 采集失败或缓存未命中时使用内置种子表，出参始终是真实版本号
+
+### 常用调试参数
+
+`?debug=1` 可看到 `webview_versions`（当前生效的 4 个主版本及各自补丁号列表）、`webview_updated_at`、`geo`（IP 定位结果）。
 
 ### 与 PHP 版本的行为差异
 

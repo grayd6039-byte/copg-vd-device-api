@@ -626,10 +626,12 @@ function generateTac(phone) {
 }
 
 function generateImei(g) {
-  const tac = generateTac(g.phone);
+  /* IMEI 固定 15 位数字：TAC 8 位 + 序列号 6 位 + Luhn 校验位 1 位 */
+  const tac = padLeft(String(generateTac(g.phone)), 8, '0').slice(-8);
   const serial = padLeft(String(randInt(0, 999999)), 6, '0');
   const imei14 = tac + serial;
-  return imei14 + String(luhnCheckDigit(imei14));
+  const imei = imei14 + String(luhnCheckDigit(imei14));
+  return imei.slice(-15);
 }
 
 function generateImsi(g) {

@@ -313,6 +313,28 @@ curl -s "https://your-domain.com/api.php"
 | PHONE_NUMBER | 本机电话号码 | E.164 格式（+国家代码 + 号码） |
 | BATTERY | 电池信息（JSON 字符串） | capacity/health/temperature/voltage/technology/plugged/status |
 
+### hardware 硬件字段（Cloudflare 版）
+
+| 字段 | 说明 | 示例 |
+|------|------|------|
+| GpuVendor | GPU 厂商 | `Qualcomm` / `ARM` / `Samsung` / `Huawei` |
+| GpuModel | GPU 型号 | `Adreno 830` / `Mali-G715` / `Xclipse 920` |
+| GpuRender | GPU 渲染器型号（与 GpuModel 相同，兼容原字段） | `Adreno 830` |
+| CpuCoreCount | 逻辑处理器核心数 | `8`（Exynos 2400 为 `10`，Tensor G3 为 `9`，Kirin 9000S/9010/9020 为 `12`） |
+| RamSize | 运行内存（GB） | `8` / `12` / `16` |
+| ColorDepth | 屏幕颜色深度（bit） | `24` |
+| TouchSupport | 是否支持触控 | `true` |
+| MaxTouchPoints | 最大同时触控点数 | `10` |
+| Sensors | 传感器清单 | `["accelerometer","gyroscope","magnetometer","light","proximity","pressure","step_counter","fingerprint","hall"]` |
+
+一致性规则：
+
+- GPU 厂商 / 型号由 SoC 决定（`SOC_GPU_MAP`），如 Snapdragon 8 Elite → Qualcomm / Adreno 830，Dimensity 9400 → ARM / Immortalis-G925
+- `CpuCoreCount` 由 SoC 决定，且 `cpuinfo` 中 `processor:` 行数与之完全相等
+- `RamSize` 按 SoC 档位取值，同一机型每次请求固定不变（按机型名哈希选档）
+- `Sensors` 按机型档次给出：旗舰 9 项（含气压计、计步器、霍尔），中端 6 项，入门 4 项
+- 机型库只保留手机，`iPad` / `iPhone` / 平板（Tab/Pad/Tablet）会在加载时被过滤
+
 ## 数据源说明
 
 ### 内置数据库

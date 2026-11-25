@@ -127,6 +127,13 @@ const PHONES = [
   {"brand":"lg","manufacturer":"LG Electronics","model":"LG Velvet","device_code":"velvet","soc":"Snapdragon 765G","screen_density":2.25,"screen_width":1080,"screen_height":2460}
 ];
 
+/* 只保留手机机型：过滤 iPad / iPhone / 平板（Tab/Pad/Tablet）等非手机条目 */
+const PHONE_MODEL_BLOCKLIST = /(ipad|iphone|ipod|tablet|matepad|mediapad|\btab\b|\bpad\b)/i;
+const PHONE_DB = PHONES.filter(function (p) {
+  const text = String(p.model) + ' ' + String(p.device_code);
+  return !PHONE_MODEL_BLOCKLIST.test(text);
+});
+
 /* ============================================================
  * SoC → GPU / Vulkan / 频率 对照表（DataGenerator::$socGpuMap）
  * ============================================================ */
@@ -160,6 +167,46 @@ const SOC_GPU_MAP = {
   'Kirin 9020': { gpu: 'Maleoon 910', vendor: 'Huawei', gl: '3.2', gl_version: 'v100.0.0', vulkan: '1.3', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2610000] },
   'Kirin 9010': { gpu: 'Maleoon 910', vendor: 'Huawei', gl: '3.2', gl_version: 'v100.0.0', vulkan: '1.2', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2500000] },
   'Kirin 9000S': { gpu: 'Maleoon 910', vendor: 'Huawei', gl: '3.2', gl_version: 'v100.0.0', vulkan: '1.1', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000] }
+};
+
+/* SoC → 逻辑核心数 / 内存档位 / 传感器档位（与 SOC_GPU_MAP 一一对应，保证硬件信息自洽） */
+const SOC_SPEC_MAP = {
+  'Snapdragon 8 Elite':    { cores: 8,  ram: [12, 16], tier: 'flagship' },
+  'Snapdragon 8 Gen 3':    { cores: 8,  ram: [12, 16], tier: 'flagship' },
+  'Snapdragon 8 Gen 2':    { cores: 8,  ram: [8, 12],  tier: 'flagship' },
+  'Snapdragon 8+ Gen 1':   { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Snapdragon 7+ Gen 3':   { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Snapdragon 6 Gen 3':    { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Snapdragon 765G':       { cores: 8,  ram: [6, 8],   tier: 'entry' },
+  'Snapdragon 685':        { cores: 8,  ram: [6, 8],   tier: 'entry' },
+  'Dimensity 9400':        { cores: 8,  ram: [12, 16], tier: 'flagship' },
+  'Dimensity 9300':        { cores: 8,  ram: [12, 16], tier: 'flagship' },
+  'Dimensity 8350':        { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Dimensity 8300 Extreme':{ cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Dimensity 8200':        { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Dimensity 7300 Ultra':  { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Dimensity 7300':        { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Dimensity 7200X':       { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Dimensity 7200':        { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Dimensity 7050':        { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Exynos 2400':           { cores: 10, ram: [8, 12],  tier: 'flagship' },
+  'Exynos 1480':           { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Exynos 1380':           { cores: 8,  ram: [6, 8],   tier: 'mid' },
+  'Tensor G4':             { cores: 8,  ram: [8, 12, 16], tier: 'flagship' },
+  'Tensor G3':             { cores: 9,  ram: [8, 12],  tier: 'flagship' },
+  'Tensor G2':             { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Tensor G1':             { cores: 8,  ram: [8, 12],  tier: 'flagship' },
+  'Kirin 9020':            { cores: 12, ram: [12, 16], tier: 'flagship' },
+  'Kirin 9010':            { cores: 12, ram: [8, 12],  tier: 'flagship' },
+  'Kirin 9000S':           { cores: 12, ram: [8, 12],  tier: 'flagship' }
+};
+
+/* 传感器清单：与机型档次一致，不出现平板 / 折叠外屏等机型专属项 */
+const SENSOR_SETS = {
+  flagship: ['accelerometer', 'gyroscope', 'magnetometer', 'light', 'proximity',
+             'pressure', 'step_counter', 'fingerprint', 'hall'],
+  mid: ['accelerometer', 'gyroscope', 'magnetometer', 'light', 'proximity', 'fingerprint'],
+  entry: ['accelerometer', 'light', 'proximity', 'fingerprint']
 };
 
 const DEFAULT_SOC = 'Snapdragon 8 Gen 3';
@@ -853,13 +900,11 @@ function generateChromeVersion() {
   return randChoice(list);
 }
 
-function generateCpuInfo(phone) {
-  const lines = [];
+function generateCpuInfo(phone, coreCount) {  const lines = [];
+  const cores = (typeof coreCount === 'number' && coreCount > 0) ? coreCount : 8;
   lines.push('Processor: Aarch64 Processor rev ' + String(randInt(0, 4)) + ' (aarch64)');
   lines.push('MPIPSV: ' + (randInt(4000, 6000) / 100).toFixed(2));
-  const coreOptions = [4, 6, 8];
-  const coreCount = randChoice(coreOptions);
-  for (let i = 0; i < coreCount; i++) {
+  for (let i = 0; i < cores; i++) {
     lines.push('processor: ' + String(i));
     lines.push('BogoMIPS: ' + (randInt(3000, 5500) / 100).toFixed(2));
   }
@@ -872,6 +917,16 @@ function generateCpuInfo(phone) {
   lines.push('CPU revision: ' + String(randInt(0, 4)));
   lines.push('Hardware: ' + getSocHardwareName(phone));
   return lines.join('\n') + '\n';
+}
+
+/* 稳定哈希：同一机型的配置（如 RAM 档位）每次请求保持一致 */
+function stableHash(text) {
+  let h = 0;
+  const s = String(text);
+  for (let i = 0; i < s.length; i++) {
+    h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  }
+  return h;
 }
 
 /* ============================================================
@@ -970,12 +1025,18 @@ function buildHardwareObject(g, p, model) {
   const currentFrequency = generateCurrentFrequency(frequency);
   const gpuExtensions = generateGpuExtensions();
 
+  const socSpec = SOC_SPEC_MAP[socModel] || SOC_SPEC_MAP[DEFAULT_SOC];
+  const coreCount = socSpec.cores;
+  /* 同一机型的 RAM 固定（按机型名确定性取档位），避免同一 MODEL 出现多种配置 */
+  const ramSize = socSpec.ram[stableHash(model) % socSpec.ram.length];
+  const sensors = SENSOR_SETS[socSpec.tier] || SENSOR_SETS.mid;
+
   const chromeVersion = generateChromeVersion();
   const userAgent = 'Mozilla/5.0 (Linux; Android ' + g.androidVersion + '; ' + model +
     ' Build/' + g.buildId + '; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/' +
     chromeVersion + ' Mobile Safari/537.36';
 
-  const cpuinfo = generateCpuInfo(p);
+  const cpuinfo = generateCpuInfo(p, coreCount);
 
   return {
     dpi: dpi,
@@ -988,8 +1049,15 @@ function buildHardwareObject(g, p, model) {
     UserAgent: userAgent,
     GpuRender: gpuRender,
     GpuVendor: gpuVendor,
+    GpuModel: gpuRender,
     GpuVersion: gpuVersion,
     GPUExtensions: gpuExtensions,
+    CpuCoreCount: coreCount,
+    RamSize: ramSize,
+    ColorDepth: 24,
+    TouchSupport: true,
+    MaxTouchPoints: 10,
+    Sensors: sensors.slice(),
     cpuinfo: cpuinfo,
     vulkan: vulkan,
     frequency: frequency,
@@ -1153,7 +1221,8 @@ const PHONE_FIELDS = [
 
 const HARDWARE_FIELDS = [
   'dpi', 'density', 'width', 'height', 'xdpi', 'ydpi', 'screenDensity',
-  'UserAgent', 'GpuRender', 'GpuVendor', 'GpuVersion', 'GPUExtensions', 'cpuinfo'
+  'UserAgent', 'GpuRender', 'GpuVendor', 'GpuModel', 'GpuVersion', 'GPUExtensions',
+  'CpuCoreCount', 'RamSize', 'ColorDepth', 'TouchSupport', 'MaxTouchPoints', 'Sensors', 'cpuinfo'
 ];
 
 /* 等价 PHP isset（存在且不为 null） */
@@ -1569,7 +1638,7 @@ async function handleRequest(request, env) {
   try {
     await refreshWebViewVersions();
 
-    const phone = randChoice(PHONES);
+    const phone = randChoice(PHONE_DB);
     const apiLevel = randChoice(ANDROID_VERSIONS);
     const geo = await resolveGeo(request);
 

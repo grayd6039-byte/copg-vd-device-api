@@ -139,14 +139,14 @@ const PHONE_DB = PHONES.filter(function (p) {
  * ============================================================ */
 
 const SOC_GPU_MAP = {
-  'Snapdragon 8 Elite': { gpu: 'Adreno 830', vendor: 'Qualcomm', gl: '3.2', gl_version: 'v32.0.0', vulkan: '1.3', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000, 2700000, 3000000, 3300000, 3600000, 3900000, 4200000, 4470000] },
-  'Snapdragon 8 Gen 3': { gpu: 'Adreno 751', vendor: 'Qualcomm', gl: '3.2', gl_version: 'v30.2.4', vulkan: '1.3', frequency: [300000, 500000, 700000, 900000, 1100000, 1300000, 1500000, 1700000, 1900000, 2100000, 2300000, 2500000, 2700000, 2900000, 3100000, 3300000] },
-  'Snapdragon 8 Gen 2': { gpu: 'Adreno 740', vendor: 'Qualcomm', gl: '3.2', gl_version: 'v28.0.0', vulkan: '1.3', frequency: [300000, 500000, 700000, 900000, 1100000, 1300000, 1500000, 1700000, 1900000, 2100000, 2300000, 2500000, 2700000, 2900000, 3100000, 3300000, 3360000] },
-  'Snapdragon 8+ Gen 1': { gpu: 'Adreno 730', vendor: 'Qualcomm', gl: '3.2', gl_version: 'v26.0.0', vulkan: '1.2', frequency: [300000, 500000, 700000, 900000, 1100000, 1300000, 1500000, 1700000, 1900000, 2100000, 2300000, 2500000, 2700000, 2900000, 3000000] },
-  'Snapdragon 7+ Gen 3': { gpu: 'Adreno 732', vendor: 'Qualcomm', gl: '3.2', gl_version: 'v30.2.4', vulkan: '1.3', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000, 2610000] },
-  'Snapdragon 765G': { gpu: 'Adreno 620', vendor: 'Qualcomm', gl: '3.2', gl_version: 'v20.0.0', vulkan: '1.1', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000] },
-  'Snapdragon 685': { gpu: 'Adreno 610', vendor: 'Qualcomm', gl: '3.2', gl_version: 'v20.0.0', vulkan: '1.1', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000] },
-  'Snapdragon 6 Gen 3': { gpu: 'Adreno 710', vendor: 'Qualcomm', gl: '3.2', gl_version: 'v30.2.4', vulkan: '1.3', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000] },
+  'Snapdragon 8 Elite': { gpu: 'Adreno 830', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0630.0', vulkan: '1.3', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000, 2700000, 3000000, 3300000, 3600000, 3900000, 4200000, 4470000] },
+  'Snapdragon 8 Gen 3': { gpu: 'Adreno 750', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0530.0', vulkan: '1.3', frequency: [300000, 500000, 700000, 900000, 1100000, 1300000, 1500000, 1700000, 1900000, 2100000, 2300000, 2500000, 2700000, 2900000, 3100000, 3300000] },
+  'Snapdragon 8 Gen 2': { gpu: 'Adreno 740', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0486.0', vulkan: '1.3', frequency: [300000, 500000, 700000, 900000, 1100000, 1300000, 1500000, 1700000, 1900000, 2100000, 2300000, 2500000, 2700000, 2900000, 3100000, 3300000, 3360000] },
+  'Snapdragon 8+ Gen 1': { gpu: 'Adreno 730', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0462.0', vulkan: '1.2', frequency: [300000, 500000, 700000, 900000, 1100000, 1300000, 1500000, 1700000, 1900000, 2100000, 2300000, 2500000, 2700000, 2900000, 3000000] },
+  'Snapdragon 7+ Gen 3': { gpu: 'Adreno 732', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0530.0', vulkan: '1.3', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000, 2610000] },
+  'Snapdragon 765G': { gpu: 'Adreno 620', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0400.0', vulkan: '1.1', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000] },
+  'Snapdragon 685': { gpu: 'Adreno 610', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0400.0', vulkan: '1.1', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000] },
+  'Snapdragon 6 Gen 3': { gpu: 'Adreno 710', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0530.0', vulkan: '1.3', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000] },
   'Dimensity 9400': { gpu: 'Immortalis-G925', vendor: 'ARM', gl: '3.2', gl_version: 'v1.r4p0-00eac0.b0c21d07f7398f87a84f678063111a2e', vulkan: '1.3', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2600000, 2800000, 3000000, 3200000, 3400000, 3600000, 3800000, 4000000, 4210000] },
   'Dimensity 9300': { gpu: 'Immortalis-G720', vendor: 'ARM', gl: '3.2', gl_version: 'v1.r0p0-00eac0.843348195f462f29a4f9b602973186d8', vulkan: '1.2', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2600000, 2800000, 3000000, 3250000] },
   'Dimensity 8350': { gpu: 'Mali-G615 MC6', vendor: 'ARM', gl: '3.2', gl_version: 'v1.r4p0-00eac0.f3381954750a208830d63118a1835f09', vulkan: '1.3', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2630000] },
@@ -207,6 +207,39 @@ const SENSOR_SETS = {
              'pressure', 'step_counter', 'fingerprint', 'hall'],
   mid: ['accelerometer', 'gyroscope', 'magnetometer', 'light', 'proximity', 'fingerprint'],
   entry: ['accelerometer', 'light', 'proximity', 'fingerprint']
+};
+
+/* SoC → /proc/cpuinfo 的 CPU implementer / CPU part
+ * 必须与 SoC 厂商、核心代际自洽：Oryon=0x51，HiSilicon=0x48，其余 ARM 架构=0x41 */
+const CPU_IDENTITY = {
+  'Snapdragon 8 Elite':     { implementer: '0x51', parts: ['0x001'] },
+  'Snapdragon 8 Gen 3':     { implementer: '0x41', parts: ['0xd82', '0xd81', '0xd80'] },
+  'Snapdragon 8 Gen 2':     { implementer: '0x41', parts: ['0xd4e', '0xd4d', '0xd46'] },
+  'Snapdragon 8+ Gen 1':    { implementer: '0x41', parts: ['0xd4e', '0xd4d', '0xd46'] },
+  'Snapdragon 7+ Gen 3':    { implementer: '0x41', parts: ['0xd82', '0xd81', '0xd80'] },
+  'Snapdragon 6 Gen 3':     { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Snapdragon 765G':        { implementer: '0x41', parts: ['0xd0b', '0xd03'] },
+  'Snapdragon 685':         { implementer: '0x41', parts: ['0xd09', '0xd03'] },
+  'Dimensity 9400':         { implementer: '0x41', parts: ['0xd82', '0xd81', '0xd80'] },
+  'Dimensity 9300':         { implementer: '0x41', parts: ['0xd4e', '0xd4d', '0xd46'] },
+  'Dimensity 8350':         { implementer: '0x41', parts: ['0xd4d', '0xd46'] },
+  'Dimensity 8300 Extreme': { implementer: '0x41', parts: ['0xd4d', '0xd46'] },
+  'Dimensity 8200':         { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Dimensity 7300 Ultra':   { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Dimensity 7300':         { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Dimensity 7200X':        { implementer: '0x41', parts: ['0xd4d', '0xd46'] },
+  'Dimensity 7200':         { implementer: '0x41', parts: ['0xd4d', '0xd46'] },
+  'Dimensity 7050':         { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Exynos 2400':            { implementer: '0x41', parts: ['0xd82', '0xd81', '0xd80'] },
+  'Exynos 1480':            { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Exynos 1380':            { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Tensor G4':              { implementer: '0x41', parts: ['0xd82', '0xd81', '0xd80'] },
+  'Tensor G3':              { implementer: '0x41', parts: ['0xd4e', '0xd4d', '0xd46'] },
+  'Tensor G2':              { implementer: '0x41', parts: ['0xd48', '0xd47', '0xd46'] },
+  'Tensor G1':              { implementer: '0x41', parts: ['0xd44', '0xd47', '0xd46'] },
+  'Kirin 9020':             { implementer: '0x48', parts: ['0xd42', '0xd43'] },
+  'Kirin 9010':             { implementer: '0x48', parts: ['0xd42', '0xd43'] },
+  'Kirin 9000S':            { implementer: '0x48', parts: ['0xd42', '0xd43'] }
 };
 
 const DEFAULT_SOC = 'Snapdragon 8 Gen 3';
@@ -318,19 +351,31 @@ const FALLBACK_COUNTRIES = [
   ['+81', 10], ['+82', 10], ['+86', 11], ['+91', 10]
 ];
 
-/* GPU 扩展（generateGpuExtensions，顺序与原数组一致，含原有重复项） */
-const GPU_EXTENSIONS = [
-  'GL_EXT_debug_marker', 'GL_EXT_robustness', 'GL_EXT_texture_format_BGRA8888',
+/* 通用 GLES 扩展（各 GPU 厂商共有） */
+const GPU_COMMON_EXTENSIONS = [
+  'GL_EXT_robustness', 'GL_EXT_texture_format_BGRA8888',
   'GL_OES_depth24', 'GL_OES_element_index_uint', 'GL_OES_fbo_render_mipmap',
   'GL_OES_texture_3D', 'GL_OES_texture_float', 'GL_OES_texture_half_float',
   'GL_OES_vertex_array_object', 'GL_OES_vertex_half_float', 'GL_EXT_blend_minmax',
   'GL_EXT_color_buffer_float', 'GL_EXT_color_buffer_half_float', 'GL_EXT_discard_framebuffer',
   'GL_EXT_multi_draw_arrays', 'GL_EXT_multisampled_render_to_texture',
   'GL_EXT_read_format_bgra', 'GL_EXT_shader_texture_lod', 'GL_EXT_texture_filter_anisotropic',
-  'GL_EXT_texture_format_BGRA8888', 'GL_EXT_texture_storage', 'GL_KHR_blend_equation_advanced',
+  'GL_EXT_texture_storage', 'GL_KHR_blend_equation_advanced',
   'GL_OES_blend_func_separate', 'GL_OES_blend_subtract', 'GL_OES_byte_codes',
-  'GL_OES_compressed_ETC1_RGB8_texture', 'GL_OES_depth_texture', 'GL_OES_EGL_image'
+  'GL_OES_compressed_ETC1_RGB8_texture', 'GL_OES_depth_texture', 'GL_OES_EGL_image',
+  'GL_EXT_sRGB', 'GL_EXT_disjoint_timer_query'
 ];
+
+/* 厂商专属扩展：必须与 GpuVendor / GpuModel 同源，
+ * 避免 Adreno 机型带上 Mali 专属扩展（GPU 驱动校验会判定硬件描述不自洽） */
+const GPU_FAMILY_EXTENSIONS = {
+  Qualcomm: ['GL_EXT_debug_marker', 'GL_QCOM_tiled_rendering', 'GL_QCOM_binning_control',
+             'GL_AMD_compressed_ATC_texture', 'GL_EXT_EGL_image_storage'],
+  ARM: ['GL_ARM_shader_framebuffer_fetch', 'GL_ARM_mali_shader_binary',
+        'GL_ARM_mali_program_binary', 'GL_EXT_EGL_image_storage'],
+  Samsung: ['GL_EXT_debug_marker', 'GL_EXT_EGL_image_storage', 'GL_AMD_compressed_ATC_texture'],
+  Huawei: ['GL_EXT_EGL_image_storage']
+};
 
 /* ============================================================
  * 随机工具（全部基于 crypto.getRandomValues，均匀分布）
@@ -709,11 +754,22 @@ function generateCurrentFrequency(frequencyList) {
   return frequencyList[randInt(startIdx, endIdx)];
 }
 
-function generateGpuExtensions() {
-  const list = GPU_EXTENSIONS.slice();
+/* GPU 扩展必须与 GPU 厂商同源：Adreno / Mali / Xclipse / Maleoon 各用各的专属扩展 */
+function gpuFamilyOf(socData) {
+  const gpu = String(socData && socData.gpu ? socData.gpu : '');
+  if (/^Adreno/.test(gpu)) return 'Qualcomm';
+  if (/^Mali|^Immortalis/.test(gpu)) return 'ARM';
+  if (/^Xclipse/.test(gpu)) return 'Samsung';
+  if (/^Maleoon/.test(gpu)) return 'Huawei';
+  return 'ARM';
+}
+
+function generateGpuExtensions(socData) {
+  const family = gpuFamilyOf(socData);
+  const vendorExt = GPU_FAMILY_EXTENSIONS[family] || [];
+  const list = Array.from(new Set(GPU_COMMON_EXTENSIONS.concat(vendorExt)));
   shuffleInPlace(list);
-  const count = randInt(10, 20);
-  return list.slice(0, count).join(' ');
+  return list.join(' ');
 }
 
 /* ============================================================
@@ -909,11 +965,12 @@ function generateCpuInfo(phone, coreCount) {  const lines = [];
     lines.push('BogoMIPS: ' + (randInt(3000, 5500) / 100).toFixed(2));
   }
   lines.push('Features: fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm dcpop asimddp');
-  lines.push('CPU implementer: 0x41');
+  const socName = (phone && typeof phone.soc === 'string') ? phone.soc : DEFAULT_SOC;
+  const cpuIdentity = CPU_IDENTITY[socName] || CPU_IDENTITY[DEFAULT_SOC];
+  lines.push('CPU implementer: ' + cpuIdentity.implementer);
   lines.push('CPU architecture: 8');
   lines.push('CPU variant: 0x' + randInt(0, 15).toString(16));
-  const parts = ['0xd0b', '0xd0d', '0xd4d', '0xd4e', '0xd81', '0xd82', '0xd83'];
-  lines.push('CPU part: ' + randChoice(parts));
+  lines.push('CPU part: ' + randChoice(cpuIdentity.parts));
   lines.push('CPU revision: ' + String(randInt(0, 4)));
   lines.push('Hardware: ' + getSocHardwareName(phone));
   return lines.join('\n') + '\n';
@@ -1023,7 +1080,7 @@ function buildHardwareObject(g, p, model) {
   const vulkan = socData.vulkan;
   const frequency = socData.frequency;
   const currentFrequency = generateCurrentFrequency(frequency);
-  const gpuExtensions = generateGpuExtensions();
+  const gpuExtensions = generateGpuExtensions(socData);
 
   const socSpec = SOC_SPEC_MAP[socModel] || SOC_SPEC_MAP[DEFAULT_SOC];
   const coreCount = socSpec.cores;
@@ -1663,6 +1720,18 @@ async function handleRequest(request, env) {
           api_level: apiLevel,
           webview_versions: webviewState ? webviewState.milestones : seedWebViewMilestones(),
           webview_updated_at: webviewState ? webviewState.updatedAt : 0,
+          gpu: {
+            vendor: result.hardware.GpuVendor,
+            model: result.hardware.GpuModel,
+            version: result.hardware.GpuVersion,
+            vulkan: result.hardware.vulkan,
+            extensions: result.hardware.GPUExtensions.split(' ')
+          },
+          cpu: {
+            implementer: (result.hardware.cpuinfo.match(/CPU implementer: (\S+)/) || [])[1] || '',
+            part: (result.hardware.cpuinfo.match(/CPU part: (\S+)/) || [])[1] || '',
+            hardware: (result.hardware.cpuinfo.match(/Hardware: (\S+)/) || [])[1] || ''
+          },
           geo: geo,
           generated_at: isoNow()
         };
@@ -1679,6 +1748,18 @@ async function handleRequest(request, env) {
           api_level: apiLevel,
           webview_versions: webviewState ? webviewState.milestones : seedWebViewMilestones(),
           webview_updated_at: webviewState ? webviewState.updatedAt : 0,
+          gpu: {
+            vendor: result.hardware.GpuVendor,
+            model: result.hardware.GpuModel,
+            version: result.hardware.GpuVersion,
+            vulkan: result.hardware.vulkan,
+            extensions: result.hardware.GPUExtensions.split(' ')
+          },
+          cpu: {
+            implementer: (result.hardware.cpuinfo.match(/CPU implementer: (\S+)/) || [])[1] || '',
+            part: (result.hardware.cpuinfo.match(/CPU part: (\S+)/) || [])[1] || '',
+            hardware: (result.hardware.cpuinfo.match(/Hardware: (\S+)/) || [])[1] || ''
+          },
           geo: geo,
           generated_at: isoNow()
         }

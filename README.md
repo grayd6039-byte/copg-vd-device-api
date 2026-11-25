@@ -321,6 +321,8 @@ curl -s "https://your-domain.com/api.php"
 | GpuModel | GPU 型号 | `Adreno 830` / `Mali-G715` / `Xclipse 920` |
 | GpuRender | GPU 渲染器型号（与 GpuModel 相同，兼容原字段） | `Adreno 830` |
 | CpuCoreCount | 逻辑处理器核心数 | `8`（Exynos 2400 为 `10`，Tensor G3 为 `9`，Kirin 9000S/9010/9020 为 `12`） |
+| hardwareConcurrency | Web 指纹核心数，恒等于 `CpuCoreCount` 与 `cpuinfo` 的 `processor:` 行数 | `8` |
+| deviceMemory | Web 指纹内存，Chrome 安卓端只支持 0.25/0.5/1/2/4/8，上限固定 `8` | `8` 或 `4` |
 | RamSize | 运行内存（GB） | `8` / `12` / `16` |
 | ColorDepth | 屏幕颜色深度（bit） | `24` |
 | TouchSupport | 是否支持触控 | `true` |
@@ -339,6 +341,17 @@ curl -s "https://your-domain.com/api.php"
 - `Sensors` 按机型档次给出：旗舰 9 项（含气压计、计步器、霍尔），中端 6 项，入门 4 项
 - `xdpi` / `ydpi` 是物理像素密度，由分辨率与机型真实对角线尺寸反推，因此与 `dpi`（逻辑密度 = density×160）不相等属正常；物理尺寸始终落在 6.1-6.9 英寸，不会被识别为平板
 - 机型库只保留手机，`iPad` / `iPhone` / 平板（Tab/Pad/Tablet）会在加载时被过滤
+
+### Web 指纹避坑
+
+| 字段 | 正确做法 | 错误做法（会被判为模拟器） |
+|---|---|---|
+| hardwareConcurrency | 与 `CpuCoreCount`、`cpuinfo` 核心数完全一致 | 8 核写成 16 / 24 |
+| deviceMemory | 只能 `4` 或 `8`（Chrome 安卓端硬编码上限 8） | 写 12 / 16 |
+| colorDepth | 固定 `24`（Web 标准） | 写 30 / 32；屏幕原生 10bit 与 `colorDepth=24` 不冲突 |
+| maxTouchPoints | 固定 `10` | 写 0 / 1（无触摸设备特征） |
+
+`RamSize`（物理内存，可为 12/16）与 `deviceMemory`（Web 上报值，锁 8）分开给出，避免把物理内存直接当成浏览器指纹。
 
 ### DRM 组合（Widevine / OEMCrypto）
 

@@ -1202,6 +1202,10 @@ function buildHardwareObject(g, p, model) {
     GpuVersion: gpuVersion,
     GPUExtensions: gpuExtensions,
     CpuCoreCount: coreCount,
+    /* Web 指纹：hardwareConcurrency 必须与 CPU 核心数一致 */
+    hardwareConcurrency: coreCount,
+    /* Web 指纹：deviceMemory 只能取 Chrome 支持的档位，上限固定 8，不能用物理内存 12/16 */
+    deviceMemory: ramSize >= 8 ? 8 : 4,
     RamSize: ramSize,
     ColorDepth: 24,
     TouchSupport: true,
@@ -1374,7 +1378,8 @@ const PHONE_FIELDS = [
 const HARDWARE_FIELDS = [
   'dpi', 'density', 'width', 'height', 'xdpi', 'ydpi', 'screenDensity',
   'UserAgent', 'GpuRender', 'GpuVendor', 'GpuModel', 'GpuVersion', 'GPUExtensions',
-  'CpuCoreCount', 'RamSize', 'ColorDepth', 'TouchSupport', 'MaxTouchPoints', 'Sensors', 'cpuinfo', 'drm'
+  'CpuCoreCount', 'hardwareConcurrency', 'deviceMemory', 'RamSize',
+  'ColorDepth', 'TouchSupport', 'MaxTouchPoints', 'Sensors', 'cpuinfo', 'drm'
 ];
 
 /* 等价 PHP isset（存在且不为 null） */

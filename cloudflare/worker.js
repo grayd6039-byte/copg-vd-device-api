@@ -274,6 +274,42 @@ const CPU_IDENTITY = {
 
 const DEFAULT_SOC = 'Snapdragon 8 Gen 3';
 
+/* Widevine CDM 大版本随 Android 版本演进（均为官方真实版本号） */
+const DRM_VERSION_BY_ANDROID = { '13': '15.0.0', '14': '16.0.0', '15': '17.0.0' };
+
+/* DRM 安全级别必须与机型档次一致：旗舰普遍 L1，中低端为 L3 */
+function drmSecurityLevelFor(p, socModel) {
+  const brand = String((p && p.brand) || '').toLowerCase();
+  const model = String((p && p.model) || '');
+  if (brand === 'google') return 'L1';
+  if (brand === 'samsung') return /^Galaxy (S|Z)/.test(model) ? 'L1' : 'L3';
+  if (brand === 'sony') return /^Xperia (1|5)/.test(model) ? 'L1' : 'L3';
+  if (brand === 'asus') return 'L1';
+  if (brand === 'nothing') return /Phone \(3\)/.test(model) ? 'L1' : 'L3';
+  const spec = SOC_SPEC_MAP[socModel] || SOC_SPEC_MAP[DEFAULT_SOC];
+  return spec.tier === 'flagship' ? 'L1' : 'L3';
+}
+
+/* 合法 Widevine CDM 组合：SystemId 8159 是 Widevine 官方 System ID，
+ * 算法、会话数、HDCP 级别均取 Widevine 规范允许值，不随机编造 */
+function buildDrmObject(p, socModel, androidVersion) {
+  const level = drmSecurityLevelFor(p, socModel);
+  const version = DRM_VERSION_BY_ANDROID[String(androidVersion)] || '17.0.0';
+  return {
+    Vendor: 'Google',
+    Version: version,
+    Description: 'Widevine CDM',
+    Algorithm: 'AES/CBC/NoPadding,HmacSHA256',
+    SecurityLevel: level,
+    SystemId: 8159,
+    HdcpLevel: 'Unprotected',
+    MaxHdcpLevel: level === 'L1' ? 'HDCP_V2_2' : 'Unprotected',
+    UsageReportingSupport: true,
+    MaxNumberOfSessions: 16,
+    NumberOfOpenSessions: 0
+  };
+}
+
 /* 运营商表 [mcc, mnc, name, countryIso]（DataGenerator::$networks） */
 const NETWORKS = [
   ['310', '410', 'Verizon', 'us'],
@@ -1151,6 +1187,7 @@ function buildHardwareObject(g, p, model) {
     TouchSupport: true,
     MaxTouchPoints: 10,
     Sensors: sensors.slice(),
+    drm: buildDrmObject(p, socModel, g.androidVersion),
     cpuinfo: cpuinfo,
     vulkan: vulkan,
     frequency: frequency,
@@ -1214,6 +1251,8 @@ function generate(g) {
   const socManufacturer = getSocManufacturer(socModel);
   const boardPlatform = deviceCode;
   const serial = generateShortSerial();
+  /* 与 hardware.drm.SecurityLevel 同源，保证两处 DRM 级别一致 */
+  const drmSecurityLevel = drmSecurityLevelFor(p, socModel);
 
   const copgVd = {
     BRAND: brand,
@@ -1235,7 +1274,7 @@ function generate(g) {
     UUID: uuid,
     SECURITY_PATCH: securityPatch,
     FIRST_API_LEVEL: String(g.apiLevel),
-    DRM_SECURITY_LEVEL: 'L1',
+    DRM_SECURITY_LEVEL: drmSecurityLevel,
     SERIAL: serial,
     RADIO: basebandVersion,
     SOC_MODEL: socModel,
@@ -1315,7 +1354,7 @@ const PHONE_FIELDS = [
 const HARDWARE_FIELDS = [
   'dpi', 'density', 'width', 'height', 'xdpi', 'ydpi', 'screenDensity',
   'UserAgent', 'GpuRender', 'GpuVendor', 'GpuModel', 'GpuVersion', 'GPUExtensions',
-  'CpuCoreCount', 'RamSize', 'ColorDepth', 'TouchSupport', 'MaxTouchPoints', 'Sensors', 'cpuinfo'
+  'CpuCoreCount', 'RamSize', 'ColorDepth', 'TouchSupport', 'MaxTouchPoints', 'Sensors', 'cpuinfo', 'drm'
 ];
 
 /* 等价 PHP isset（存在且不为 null） */

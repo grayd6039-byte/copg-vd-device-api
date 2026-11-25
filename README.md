@@ -326,6 +326,7 @@ curl -s "https://your-domain.com/api.php"
 | TouchSupport | 是否支持触控 | `true` |
 | MaxTouchPoints | 最大同时触控点数 | `10` |
 | Sensors | 传感器清单 | `["accelerometer","gyroscope","magnetometer","light","proximity","pressure","step_counter","fingerprint","hall"]` |
+| drm | Widevine CDM 组合信息 | `{Vendor:"Google", Version:"17.0.0", Description:"Widevine CDM", Algorithm:"AES/CBC/NoPadding,HmacSHA256", SecurityLevel:"L1", SystemId:8159, HdcpLevel:"Unprotected", MaxHdcpLevel:"HDCP_V2_2", UsageReportingSupport:true, MaxNumberOfSessions:16, NumberOfOpenSessions:0}` |
 
 一致性规则：
 
@@ -338,6 +339,19 @@ curl -s "https://your-domain.com/api.php"
 - `Sensors` 按机型档次给出：旗舰 9 项（含气压计、计步器、霍尔），中端 6 项，入门 4 项
 - `xdpi` / `ydpi` 是物理像素密度，由分辨率与机型真实对角线尺寸反推，因此与 `dpi`（逻辑密度 = density×160）不相等属正常；物理尺寸始终落在 6.1-6.9 英寸，不会被识别为平板
 - 机型库只保留手机，`iPad` / `iPhone` / 平板（Tab/Pad/Tablet）会在加载时被过滤
+
+### DRM 组合（Widevine CDM）
+
+`hardware.drm` 给出完整且合法的 Widevine CDM 组合，并与机型、Android 版本严格对应：
+
+- `Vendor` 固定 `Google`，`Description` 固定 `Widevine CDM`，`SystemId` 固定 `8159`（Widevine 官方 System ID）
+- `Version` 随 Android 版本：13 → `15.0.0`，14 → `16.0.0`，15 → `17.0.0`
+- `SecurityLevel` 与机型档次一致：Pixel 全系、Galaxy S/Z、Xperia 1/5、ROG/Zenfone、Nothing Phone (3) 及旗舰 SoC 为 `L1`；其余中低端为 `L3`
+- `SecurityLevel` 同时写入 `COPG-VD.DRM_SECURITY_LEVEL`，两处完全一致
+- `L1` → `MaxHdcpLevel: HDCP_V2_2`；`L3` → `MaxHdcpLevel: Unprotected`；当前 `HdcpLevel` 均为 `Unprotected`（未播放受保护内容）
+- `Algorithm` 固定 `AES/CBC/NoPadding,HmacSHA256`，`UsageReportingSupport: true`，`MaxNumberOfSessions: 16`，`NumberOfOpenSessions: 0`
+
+以上取值均为 Widevine 规范允许值，不随机编造。
 
 ## 数据源说明
 

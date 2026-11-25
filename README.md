@@ -340,18 +340,24 @@ curl -s "https://your-domain.com/api.php"
 - `xdpi` / `ydpi` 是物理像素密度，由分辨率与机型真实对角线尺寸反推，因此与 `dpi`（逻辑密度 = density×160）不相等属正常；物理尺寸始终落在 6.1-6.9 英寸，不会被识别为平板
 - 机型库只保留手机，`iPad` / `iPhone` / 平板（Tab/Pad/Tablet）会在加载时被过滤
 
-### DRM 组合（Widevine CDM）
+### DRM 组合（Widevine / OEMCrypto）
 
-`hardware.drm` 给出完整且合法的 Widevine CDM 组合，并与机型、Android 版本严格对应：
+`hardware.drm` 按机型生成合法且自洽的 DRM 组合，`L1` 使用硬件 OEMCrypto、`L3` 使用软件 CDM：
 
-- `Vendor` 固定 `Google`，`Description` 固定 `Widevine CDM`，`SystemId` 固定 `8159`（Widevine 官方 System ID）
-- `Version` 随 Android 版本：13 → `15.0.0`，14 → `16.0.0`，15 → `17.0.0`
-- `SecurityLevel` 与机型档次一致：Pixel 全系、Galaxy S/Z、Xperia 1/5、ROG/Zenfone、Nothing Phone (3) 及旗舰 SoC 为 `L1`；其余中低端为 `L3`
-- `SecurityLevel` 同时写入 `COPG-VD.DRM_SECURITY_LEVEL`，两处完全一致
-- `L1` → `MaxHdcpLevel: HDCP_V2_2`；`L3` → `MaxHdcpLevel: Unprotected`；当前 `HdcpLevel` 均为 `Unprotected`（未播放受保护内容）
-- `Algorithm` 固定 `AES/CBC/NoPadding,HmacSHA256`，`UsageReportingSupport: true`，`MaxNumberOfSessions: 16`，`NumberOfOpenSessions: 0`
+| 字段 | L1（硬件 OEMCrypto） | L3（软件 CDM） |
+|---|---|---|
+| Vendor | 按芯片平台：Snapdragon→`Qualcomm`、Dimensity→`MediaTek`、Exynos→`Samsung`、Kirin→`Huawei` | `Google` |
+| Description | `OEMCrypto Widevine` | `Widevine CDM` |
+| Algorithm | `AES/CBC/NoPadding,AES/CTR/NoPadding,HmacSHA256` | `AES/CBC/NoPadding,HmacSHA256` |
+| HdcpLevel / MaxHdcpLevel | `HDCP2.2` / `HDCP2.2` | `Unprotected` / `Unprotected` |
 
-以上取值均为 Widevine 规范允许值，不随机编造。
+公共规则：
+
+- `SystemId` 固定 `8159` —— 这是 Widevine 规范固定的 System ID，OEMCrypto 与软件 CDM 相同，不存在"高通专用 SystemId"，编造其他值反而不合法
+- `Version` 随 Android 版本并在同分支浮动：13 → `15.0.x`，14 → `16.0.x`，15 → `17.0.x`
+- `MaxNumberOfSessions` 取 `8 / 12 / 16`，`NumberOfOpenSessions` 固定 `0`，`UsageReportingSupport` 固定 `true`
+- 级别与机型一致：Galaxy S/Z、Xperia 1/5、ROG/Zenfone、Nothing Phone (3) 及旗舰 SoC 为 `L1`；Pixel 与中低端为 `L3`
+- 禁止冲突组合：`L1` 不出现 `Unprotected`，`L1` 不出现 `Vendor=Google`，Vendor 不与芯片平台混用
 
 ## 数据源说明
 

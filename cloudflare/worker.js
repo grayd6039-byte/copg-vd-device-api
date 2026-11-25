@@ -277,35 +277,55 @@ const DEFAULT_SOC = 'Snapdragon 8 Gen 3';
 /* Widevine CDM 大版本随 Android 版本演进（均为官方真实版本号） */
 const DRM_VERSION_BY_ANDROID = { '13': '15.0.0', '14': '16.0.0', '15': '17.0.0' };
 
-/* DRM 安全级别必须与机型档次一致：旗舰普遍 L1，中低端为 L3 */
+/* DRM 安全级别必须与机型档次一致：旗舰普遍 L1，中低端为 L3；
+ * Pixel 走 Google 软件 CDM（L3），避免出现 "Google + L1" 的冲突组合 */
 function drmSecurityLevelFor(p, socModel) {
   const brand = String((p && p.brand) || '').toLowerCase();
   const model = String((p && p.model) || '');
-  if (brand === 'google') return 'L1';
+  if (brand === 'google') return 'L3';
   if (brand === 'samsung') return /^Galaxy (S|Z)/.test(model) ? 'L1' : 'L3';
-  if (brand === 'sony') return /^Xperia (1|5)/.test(model) ? 'L1' : 'L3';
+  if (brand === 'sony') return /^Xperia (1|5)(\s|$)/.test(model) ? 'L1' : 'L3';
   if (brand === 'asus') return 'L1';
   if (brand === 'nothing') return /Phone \(3\)/.test(model) ? 'L1' : 'L3';
   const spec = SOC_SPEC_MAP[socModel] || SOC_SPEC_MAP[DEFAULT_SOC];
   return spec.tier === 'flagship' ? 'L1' : 'L3';
 }
 
-/* 合法 Widevine CDM 组合：SystemId 8159 是 Widevine 官方 System ID，
- * 算法、会话数、HDCP 级别均取 Widevine 规范允许值，不随机编造 */
+/* OEMCrypto 厂商必须与芯片平台一致，禁止跨平台混用 */
+function drmVendorForSoc(socModel) {
+  if (/^Snapdragon/.test(socModel)) return 'Qualcomm';
+  if (/^Dimensity/.test(socModel)) return 'MediaTek';
+  if (/^Exynos/.test(socModel)) return 'Samsung';
+  if (/^Tensor/.test(socModel)) return 'Google';
+  if (/^Kirin/.test(socModel)) return 'Huawei';
+  return 'Qualcomm';
+}
+
+/* 合法 Widevine / OEMCrypto 组合：
+ * - SystemId 8159 是 Widevine 规范固定的 System ID（OEMCrypto 与软件 CDM 相同），不能编造其他值
+ * - L1 = 硬件 OEMCrypto，必须搭配 HDCP2.2；L3 = 软件 CDM，Unprotected
+ * - Algorithm 只使用 Widevine 规范允许的套件 */
 function buildDrmObject(p, socModel, androidVersion) {
   const level = drmSecurityLevelFor(p, socModel);
-  const version = DRM_VERSION_BY_ANDROID[String(androidVersion)] || '17.0.0';
+  const base = DRM_VERSION_BY_ANDROID[String(androidVersion)] || '17.0.0';
+  const baseParts = base.split('.');
+  /* 同分支小版本浮动（如 17.0.0 ~ 17.0.3） */
+  const version = baseParts[0] + '.' + baseParts[1] + '.' + String(randInt(0, 3));
+  const isL1 = level === 'L1';
+
   return {
-    Vendor: 'Google',
+    Vendor: isL1 ? drmVendorForSoc(socModel) : 'Google',
     Version: version,
-    Description: 'Widevine CDM',
-    Algorithm: 'AES/CBC/NoPadding,HmacSHA256',
+    Description: isL1 ? 'OEMCrypto Widevine' : 'Widevine CDM',
+    Algorithm: isL1
+      ? 'AES/CBC/NoPadding,AES/CTR/NoPadding,HmacSHA256'
+      : 'AES/CBC/NoPadding,HmacSHA256',
     SecurityLevel: level,
     SystemId: 8159,
-    HdcpLevel: 'Unprotected',
-    MaxHdcpLevel: level === 'L1' ? 'HDCP_V2_2' : 'Unprotected',
+    HdcpLevel: isL1 ? 'HDCP2.2' : 'Unprotected',
+    MaxHdcpLevel: isL1 ? 'HDCP2.2' : 'Unprotected',
     UsageReportingSupport: true,
-    MaxNumberOfSessions: 16,
+    MaxNumberOfSessions: randChoice([8, 12, 16]),
     NumberOfOpenSessions: 0
   };
 }

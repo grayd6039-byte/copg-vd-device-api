@@ -330,9 +330,13 @@ curl -s "https://your-domain.com/api.php"
 一致性规则：
 
 - GPU 厂商 / 型号由 SoC 决定（`SOC_GPU_MAP`），如 Snapdragon 8 Elite → Qualcomm / Adreno 830，Dimensity 9400 → ARM / Immortalis-G925
-- `CpuCoreCount` 由 SoC 决定，且 `cpuinfo` 中 `processor:` 行数与之完全相等
+- `GPUExtensions` 按 GPU 厂商成套输出：Adreno 只带 `GL_QCOM_*`，Mali / Immortalis 只带 `GL_ARM_*`，不会交叉出现
+- `GpuVersion` 与厂商格式一致：Adreno 为 `OpenGL ES 3.2 V@0630.0`，Mali / Immortalis / Xclipse / Maleoon 为 `v1.rXXp0-...`
+- `CpuCoreCount` 由 SoC 决定，且 `cpuinfo` 中 `processor:` 行数与之完全相等；`CPU implementer` 与厂商一致（Oryon `0x51`、HiSilicon `0x48`、其余 `0x41`）
 - `RamSize` 按 SoC 档位取值，同一机型每次请求固定不变（按机型名哈希选档）
+- `ColorDepth` 固定 `24`，`TouchSupport` 固定 `true`，`MaxTouchPoints` 固定 `10`
 - `Sensors` 按机型档次给出：旗舰 9 项（含气压计、计步器、霍尔），中端 6 项，入门 4 项
+- `xdpi` / `ydpi` 是物理像素密度，由分辨率与机型真实对角线尺寸反推，因此与 `dpi`（逻辑密度 = density×160）不相等属正常；物理尺寸始终落在 6.1-6.9 英寸，不会被识别为平板
 - 机型库只保留手机，`iPad` / `iPhone` / 平板（Tab/Pad/Tablet）会在加载时被过滤
 
 ## 数据源说明

@@ -127,6 +127,36 @@ const PHONES = [
   {"brand":"lg","manufacturer":"LG Electronics","model":"LG Velvet","device_code":"velvet","soc":"Snapdragon 765G","screen_density":2.25,"screen_width":1080,"screen_height":2460}
 ];
 
+/* 机型 → 屏幕对角线英寸：用于由分辨率反推物理 xdpi/ydpi，
+ * 保证 width/xdpi ≈ 真实屏幕尺寸，避免被识别为大屏 / 平板 */
+const SCREEN_SIZE_BY_MODEL = {
+  'Pixel 9a': 6.3, 'Pixel 9': 6.3, 'Pixel 9 Pro': 6.3, 'Pixel 9 Pro XL': 6.8,
+  'Pixel 8': 6.2, 'Pixel 8 Pro': 6.7, 'Pixel 7a': 6.1, 'Pixel 7': 6.3,
+  'Pixel 7 Pro': 6.7, 'Pixel 6a': 6.1, 'Pixel 6': 6.4, 'Pixel 6 Pro': 6.7,
+  'Galaxy S25 Ultra': 6.9, 'Galaxy S25+': 6.7, 'Galaxy S25': 6.2,
+  'Galaxy S24 Ultra': 6.8, 'Galaxy S24+': 6.7, 'Galaxy S24': 6.2,
+  'Galaxy S23 Ultra': 6.8, 'Galaxy S23+': 6.6, 'Galaxy S23': 6.1,
+  'Galaxy A56': 6.7, 'Galaxy A36': 6.7, 'Galaxy A26': 6.7,
+  'Galaxy Z Fold7': 6.5, 'Galaxy Z Flip7': 6.9,
+  'Xiaomi 15 Ultra': 6.73, 'Xiaomi 15 Pro': 6.73, 'Xiaomi 15': 6.36,
+  'Xiaomi 14 Ultra': 6.73, 'Xiaomi 14 Pro': 6.73, 'Xiaomi 14': 6.36,
+  'Redmi Note 14 Pro': 6.67, 'Redmi Note 14': 6.67,
+  'Redmi K80 Pro': 6.67, 'Redmi K80': 6.67,
+  'OnePlus 13': 6.82, 'OnePlus 12': 6.7, 'OnePlus 12R': 6.78,
+  'OnePlus Nord 4': 6.74, 'OnePlus Nord CE4': 6.7,
+  'OPPO Find X8 Pro': 6.78, 'OPPO Find X8': 6.59,
+  'OPPO Reno 13 Pro': 6.83, 'OPPO A3 Pro': 6.7,
+  'Vivo X200 Pro': 6.78, 'Vivo X200': 6.67, 'Vivo S20 Pro': 6.78, 'Vivo Y300': 6.77,
+  'Moto X50 Ultra': 6.7, 'Moto Edge 60 Pro': 6.7, 'Moto G85': 6.67, 'Moto G84': 6.55,
+  'Xperia 1 VI': 6.5, 'Xperia 5 VI': 6.1, 'Xperia 10 VII': 6.1,
+  'Huawei Pura 70 Ultra': 6.8, 'Huawei Pura 70 Pro': 6.8, 'Huawei Mate 60 Pro': 6.82,
+  'Honor Magic7 Pro': 6.8, 'Honor Magic7': 6.78, 'Honor X60 Pro': 6.78,
+  'Nothing Phone (3)': 6.67, 'Nothing Phone (2a)': 6.7,
+  'ROG Phone 9 Pro': 6.78, 'Zenfone 11 Ultra': 6.78,
+  'Realme GT 6': 6.78, 'Realme 13 Pro+': 6.7, 'Realme C67': 6.72, 'LG Velvet': 6.8
+};
+const DEFAULT_SCREEN_SIZE = 6.6;
+
 /* 只保留手机机型：过滤 iPad / iPhone / 平板（Tab/Pad/Tablet）等非手机条目 */
 const PHONE_MODEL_BLOCKLIST = /(ipad|iphone|ipod|tablet|matepad|mediapad|\btab\b|\bpad\b)/i;
 const PHONE_DB = PHONES.filter(function (p) {
@@ -1067,8 +1097,12 @@ function buildHardwareObject(g, p, model) {
   const height = (p.screen_height === undefined || p.screen_height === null) ? 2400 : p.screen_height;
 
   const dpi = Math.round(density * 160);
-  const xdpi = dpi + randInt(-5, 5);
-  const ydpi = dpi + randInt(-5, 5);
+  /* xdpi/ydpi 是物理像素密度，与 dpi（逻辑密度）本来就不同；
+   * 由分辨率 + 真实对角线尺寸反推，保证物理尺寸与机型一致（不会被算成平板） */
+  const screenSize = SCREEN_SIZE_BY_MODEL[model] || DEFAULT_SCREEN_SIZE;
+  const physicalDpi = Math.round(Math.sqrt(width * width + height * height) / screenSize);
+  const xdpi = physicalDpi;
+  const ydpi = physicalDpi + randInt(-1, 1);
 
   const socModel = (p.soc === undefined || p.soc === null) ? DEFAULT_SOC : p.soc;
   let socData = SOC_GPU_MAP[DEFAULT_SOC];

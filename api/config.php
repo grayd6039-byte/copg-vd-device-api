@@ -34,7 +34,7 @@ return [
     'ip_geolocation' => [
         'enabled' => false,
         'api_key' => '',
-        'api_url' => 'https://ip.yowao.xyz/ipgeo',
+        'api_url' => 'https://ip.yowao.xyz/ipgeo-dbip/ipgeo',
         'timeout' => 5,           // seconds
         'fallback_country_code' => '+1',  // fallback if API fails
         'fallback_national_len' => 10,

@@ -24,7 +24,7 @@ const GEO_FALLBACK_COUNTRY_CODE = '+1';       // config.php => ip_geolocation.fa
 const GEO_FALLBACK_NATIONAL_LEN = 10;         // config.php => ip_geolocation.fallback_national_len
 
 /* IP 地理定位接口（替代原 ipgeolocation.io；返回 ipgeolocation.io 兼容结构，但无 calling_code 字段） */
-const GEO_API_URL = 'https://ip.yowao.xyz/ipgeo';
+const GEO_API_URL = 'https://ip.yowao.xyz/ipgeo-dbip/ipgeo';
 const GEO_API_TIMEOUT_MS = 3000;
 const GEO_CACHE_TTL_MS = 60 * 60 * 1000;      // 同一 IP 的地理结果缓存 1 小时
 const GEO_CACHE_MAX = 500;
@@ -1647,7 +1647,7 @@ function validateJsonSyntax(jsonString) {
 }
 
 /* ============================================================
- * 地理定位（ip.yowao.xyz/ipgeo，失败回退 Cloudflare request.cf）
+ * 地理定位（ip.yowao.xyz/ipgeo-dbip/ipgeo，失败回退 Cloudflare request.cf）
  * ============================================================ */
 
 const geoCache = new Map();

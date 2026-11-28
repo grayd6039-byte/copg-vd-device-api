@@ -1796,6 +1796,74 @@ function validateStructure(data) {
     if (isSet(data.hardware, 'dpi') && (!isNumeric(data.hardware.dpi) || Number(data.hardware.dpi) < 100)) {
       errors.push('hardware.dpi must be numeric and > 100');
     }
+
+    /* DRM 组合合法性：每一组真机信息都必须带一套自洽的 Widevine/OEMCrypto 字段 */
+    const drm = data.hardware.drm;
+    if (!isPhpArray(drm)) {
+      errors.push('hardware.drm missing or invalid');
+    } else {
+      const drmFields = ['Vendor', 'Version', 'Description', 'Algorithm', 'SecurityLevel',
+        'SystemId', 'HdcpLevel', 'MaxHdcpLevel', 'UsageReportingSupport',
+        'MaxNumberOfSessions', 'NumberOfOpenSessions'];
+      for (let i = 0; i < drmFields.length; i++) {
+        if (!isSet(drm, drmFields[i])) errors.push('hardware.drm missing field: ' + drmFields[i]);
+      }
+      const level = String(drm.SecurityLevel || '');
+      if (level !== 'L1' && level !== 'L3') {
+        errors.push('hardware.drm.SecurityLevel must be L1 or L3');
+      }
+      if (level !== String(copgVd.DRM_SECURITY_LEVEL || '')) {
+        errors.push('hardware.drm.SecurityLevel != COPG-VD.DRM_SECURITY_LEVEL');
+      }
+      if (String(drm.SystemId) !== '8159') {
+        errors.push('hardware.drm.SystemId must be 8159');
+      }
+      if ([8, 12, 16].indexOf(Number(drm.MaxNumberOfSessions)) === -1) {
+        errors.push('hardware.drm.MaxNumberOfSessions must be 8, 12 or 16');
+      }
+      if (Number(drm.NumberOfOpenSessions) !== 0) {
+        errors.push('hardware.drm.NumberOfOpenSessions must be 0');
+      }
+      if (drm.UsageReportingSupport !== true) {
+        errors.push('hardware.drm.UsageReportingSupport must be true');
+      }
+      if (level === 'L1') {
+        if (String(drm.Vendor) === 'Google') {
+          errors.push('hardware.drm L1 must not use Google vendor');
+        }
+        if (String(drm.HdcpLevel) !== 'HDCP2.2' || String(drm.MaxHdcpLevel) !== 'HDCP2.2') {
+          errors.push('hardware.drm L1 must use HDCP2.2');
+        }
+        if (String(drm.Description) !== 'OEMCrypto Widevine') {
+          errors.push('hardware.drm L1 Description must be OEMCrypto Widevine');
+        }
+        if (!/AES\/CTR\/NoPadding/.test(String(drm.Algorithm))) {
+          errors.push('hardware.drm L1 Algorithm must include AES/CTR/NoPadding');
+        }
+        const expectedVendor = drmVendorForSoc(String(copgVd.SOC_MODEL || ''));
+        if (String(drm.Vendor) !== expectedVendor) {
+          errors.push('hardware.drm Vendor mismatch SoC, expected: ' + expectedVendor);
+        }
+      } else {
+        if (String(drm.Vendor) !== 'Google') {
+          errors.push('hardware.drm L3 Vendor must be Google');
+        }
+        if (String(drm.HdcpLevel) !== 'Unprotected' || String(drm.MaxHdcpLevel) !== 'Unprotected') {
+          errors.push('hardware.drm L3 HdcpLevel must be Unprotected');
+        }
+        if (String(drm.Description) !== 'Widevine CDM') {
+          errors.push('hardware.drm L3 Description must be Widevine CDM');
+        }
+      }
+      const rel = String((copgVd.VERSION && copgVd.VERSION.RELEASE) || '');
+      const base = DRM_VERSION_BY_ANDROID[rel];
+      if (base) {
+        const majorMinor = base.split('.').slice(0, 2).join('.') + '.';
+        if (String(drm.Version).indexOf(majorMinor) !== 0) {
+          errors.push('hardware.drm.Version does not match Android ' + rel);
+        }
+      }
+    }
   }
 
   return { valid: errors.length === 0, errors: errors };

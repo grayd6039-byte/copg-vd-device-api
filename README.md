@@ -87,7 +87,7 @@ Cloudflare Workers 不支持 PHP，因此 `cloudflare/worker.js` 是用纯 JS �
 
 ```
 cloudflare/
-├── worker.js        # 单文件 Worker（内联 127 条手机数据 + 生成器 + 校验器）
+├── worker.js        # 单文件 Worker（内联 226 条手机数据 + 生成器 + 校验器）
 └── wrangler.toml    # name = "mecg-so-device-api", main = "worker.js"
 ```
 
@@ -187,7 +187,7 @@ Workers 版本的处理顺序：
 
 ### 与 PHP 版本的行为差异
 
-1. 不移植 GSMArena 爬虫与 `phones_cache.json` 磁盘缓存（Workers 无文件系统），改用按 GSMArena 参数核验过的内联机型库（127 条、19 个品牌，含出厂 Android 版本 `launch` 与可升级上限 `max`）。
+1. 不移植 GSMArena 爬虫与 `phones_cache.json` 磁盘缓存（Workers 无文件系统），改用按 GSMArena 参数核验过的内联机型库（226 条、23 个品牌，含出厂 Android 版本 `launch` 与可升级上限 `max`）。
 2. `phone.latitude` / `phone.longitude` 由地理接口 / `request.cf` 填充（PHP 恒为空）。
 3. 随机数改用 `crypto.getRandomValues` + 拒绝采样，分布与 PHP `random_int` 一致（不使用 `Math.random`）。
 4. JSON 格式化：PHP 会转义 `/`（`\/`），Worker 不转义；解析结果完全相同。
@@ -342,7 +342,7 @@ curl -s "https://your-domain.com/api.php"
 - `xdpi` / `ydpi` 是物理像素密度，由分辨率与机型真实对角线尺寸反推，因此与 `dpi`（逻辑密度 = density×160）不相等属正常；物理尺寸始终落在 6.1-6.9 英寸，不会被识别为平板
 - 机型库只保留手机，`iPad` / `iPhone` / 平板（Tab/Pad/Tablet）会在加载时被过滤
 - 机型参数（品牌、厂商、型号、SoC、GPU、内存、屏幕、基带）对照 GSMArena 机型页核验；出厂 Android 版本写在 `launch`，可升级上限写在 `max`
-- 当前覆盖 19 个品牌：Google、Samsung、Xiaomi/Redmi/Poco、OnePlus、OPPO、vivo/iQOO、Motorola、Sony、Honor、Nothing、ASUS、realme、Nubia/RedMagic、Meizu、HTC、Sharp、Fairphone、Infinix、Tecno
+- 当前覆盖 23 个品牌：Google、Samsung、Xiaomi/Redmi/Poco、OnePlus、OPPO、vivo/iQOO、Motorola、Sony、Honor、Nothing、ASUS、realme、Nubia/RedMagic、Meizu、HTC、Sharp、Fairphone、Infinix、Tecno、itel、Lava、Blackview、Ulefone
 - 已移除 HarmonyOS 机型（华为，非 Android）、出厂低于 Android 13 的机型（Pixel 6 系列）与已退出市场的机型（LG Velvet），保证输出系统版本始终在 Android 13-16
 
 ### Web 指纹避坑

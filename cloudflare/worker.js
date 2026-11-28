@@ -17,7 +17,7 @@
  * ============================================================ */
 
 const DEFAULT_API_KEY = 'mecg-so-2026';       // config.php => api_key
-const ANDROID_VERSIONS = [33, 34, 35];        // config.php => android_versions
+const ANDROID_VERSIONS = [33, 34, 35, 36];      // 只生成 Android 13/14/15/16
 const CORS_ENABLED = true;                    // config.php => cors.enabled
 const CORS_ORIGIN = '*';                      // config.php => cors.origin
 const GEO_FALLBACK_COUNTRY_CODE = '+1';       // config.php => ip_geolocation.fallback_country_code
@@ -55,76 +55,69 @@ const WEBVIEW_VERSION_SEED = {
  * ============================================================ */
 
 const PHONES = [
-  {"brand":"google","manufacturer":"Google","model":"Pixel 9a","device_code":"bramble","soc":"Tensor G4","screen_density":2.7,"screen_width":1080,"screen_height":2400},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 9","device_code":"caiman","soc":"Tensor G4","screen_density":2.75,"screen_width":1080,"screen_height":2400},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 9 Pro","device_code":"shiba","soc":"Tensor G4","screen_density":2.75,"screen_width":1440,"screen_height":3120},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 9 Pro XL","device_code":"husky","soc":"Tensor G4","screen_density":2.75,"screen_width":1440,"screen_height":3120},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 8","device_code":"shiba","soc":"Tensor G3","screen_density":2.75,"screen_width":1080,"screen_height":2400},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 8 Pro","device_code":"husky","soc":"Tensor G3","screen_density":2.75,"screen_width":1440,"screen_height":3120},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 7a","device_code":"lynx","soc":"Tensor G2","screen_density":2.5,"screen_width":1080,"screen_height":2400},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 7","device_code":"panther","soc":"Tensor G2","screen_density":2.5,"screen_width":1080,"screen_height":2400},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 7 Pro","device_code":"cheetah","soc":"Tensor G2","screen_density":2.5,"screen_width":1440,"screen_height":3120},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 6a","device_code":"marble","soc":"Tensor G2","screen_density":2.5,"screen_width":1080,"screen_height":2400},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 6","device_code":"ramsay","soc":"Tensor G1","screen_density":2.5,"screen_width":1080,"screen_height":2400},
-  {"brand":"google","manufacturer":"Google","model":"Pixel 6 Pro","device_code":"redfin","soc":"Tensor G1","screen_density":2.5,"screen_width":1440,"screen_height":3120},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S25 Ultra","device_code":"e3q","soc":"Snapdragon 8 Elite","screen_density":2.6,"screen_width":1440,"screen_height":3120},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S25+","device_code":"e3s","soc":"Snapdragon 8 Elite","screen_density":2.6,"screen_width":1440,"screen_height":3120},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S25","device_code":"e3q","soc":"Snapdragon 8 Elite","screen_density":2.6,"screen_width":1080,"screen_height":2340},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S24 Ultra","device_code":"e5q","soc":"Snapdragon 8 Gen 3","screen_density":2.6,"screen_width":1440,"screen_height":3120},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S24+","device_code":"e5s","soc":"Exynos 2400","screen_density":2.6,"screen_width":1440,"screen_height":3120},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S24","device_code":"e5q","soc":"Exynos 2400","screen_density":2.6,"screen_width":1080,"screen_height":2340},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S23 Ultra","device_code":"dm3q","soc":"Snapdragon 8 Gen 2","screen_density":2.6,"screen_width":1440,"screen_height":3088},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S23+","device_code":"dm3s","soc":"Snapdragon 8 Gen 2","screen_density":2.6,"screen_width":1440,"screen_height":3088},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S23","device_code":"dm3q","soc":"Snapdragon 8 Gen 2","screen_density":2.6,"screen_width":1080,"screen_height":2340},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy A56","device_code":"a56","soc":"Exynos 1480","screen_density":2.25,"screen_width":1080,"screen_height":2340},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy A36","device_code":"a36","soc":"Exynos 1380","screen_density":2.25,"screen_width":1080,"screen_height":2340},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy A26","device_code":"a26","soc":"Exynos 1380","screen_density":2.25,"screen_width":720,"screen_height":1600},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy Z Fold7","device_code":"fold7","soc":"Snapdragon 8 Elite","screen_density":2.6,"screen_width":1080,"screen_height":2340},
-  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy Z Flip7","device_code":"flip7","soc":"Snapdragon 8 Elite","screen_density":2.6,"screen_width":1080,"screen_height":2640},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 15 Ultra","device_code":"cassian","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1440,"screen_height":3200},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 15 Pro","device_code":"dada","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1440,"screen_height":3200},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 15","device_code":"dada","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1200,"screen_height":2670},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 14 Ultra","device_code":"aurora","soc":"Snapdragon 8 Gen 3","screen_density":2.75,"screen_width":1440,"screen_height":3200},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 14 Pro","device_code":"titi","soc":"Snapdragon 8 Gen 3","screen_density":2.75,"screen_width":1440,"screen_height":3200},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 14","device_code":"titi","soc":"Snapdragon 8 Gen 3","screen_density":2.75,"screen_width":1200,"screen_height":2670},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Redmi Note 14 Pro","device_code":"ruby","soc":"Dimensity 7300 Ultra","screen_density":2.25,"screen_width":1220,"screen_height":2712},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Redmi Note 14","device_code":"ruby","soc":"Dimensity 7300 Ultra","screen_density":2.25,"screen_width":1220,"screen_height":2712},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Redmi K80 Pro","device_code":"inui","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1440,"screen_height":3200},
-  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Redmi K80","device_code":"inui","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1440,"screen_height":3200},
-  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus 13","device_code":"CPH2581","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1440,"screen_height":3168},
-  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus 12","device_code":"CPH2483","soc":"Snapdragon 8 Gen 3","screen_density":2.75,"screen_width":1440,"screen_height":3168},
-  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus 12R","device_code":"CPH2561","soc":"Snapdragon 8 Gen 3","screen_density":2.75,"screen_width":1264,"screen_height":2780},
-  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus Nord 4","device_code":"CPH2589","soc":"Snapdragon 7+ Gen 3","screen_density":2.25,"screen_width":1216,"screen_height":2704},
-  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus Nord CE4","device_code":"CPH2631","soc":"Snapdragon 7+ Gen 3","screen_density":2.25,"screen_width":1080,"screen_height":2400},
-  {"brand":"oppo","manufacturer":"OPPO","model":"OPPO Find X8 Pro","device_code":"OP5A39L1","soc":"Dimensity 9400","screen_density":2.75,"screen_width":1264,"screen_height":2780},
-  {"brand":"oppo","manufacturer":"OPPO","model":"OPPO Find X8","device_code":"OP5A39L1","soc":"Dimensity 9400","screen_density":2.75,"screen_width":1264,"screen_height":2780},
-  {"brand":"oppo","manufacturer":"OPPO","model":"OPPO Reno 13 Pro","device_code":"OP5E1FL1","soc":"Dimensity 8350","screen_density":2.25,"screen_width":1264,"screen_height":2780},
-  {"brand":"oppo","manufacturer":"OPPO","model":"OPPO A3 Pro","device_code":"OP5D41L1","soc":"Dimensity 7300","screen_density":2.25,"screen_width":1080,"screen_height":2412},
-  {"brand":"vivo","manufacturer":"Vivo","model":"Vivo X200 Pro","device_code":"PD2341","soc":"Dimensity 9400","screen_density":2.75,"screen_width":1260,"screen_height":2800},
-  {"brand":"vivo","manufacturer":"Vivo","model":"Vivo X200","device_code":"PD2341","soc":"Dimensity 9400","screen_density":2.75,"screen_width":1260,"screen_height":2800},
-  {"brand":"vivo","manufacturer":"Vivo","model":"Vivo S20 Pro","device_code":"V2367A","soc":"Dimensity 9300","screen_density":2.25,"screen_width":1260,"screen_height":2800},
-  {"brand":"vivo","manufacturer":"Vivo","model":"Vivo Y300","device_code":"V2354","soc":"Dimensity 7300","screen_density":2.25,"screen_width":1080,"screen_height":2376},
-  {"brand":"motorola","manufacturer":"Motorola Mobility","model":"Moto X50 Ultra","device_code":"xt2417-3","soc":"Snapdragon 8 Gen 3","screen_density":2.25,"screen_width":1220,"screen_height":2712},
-  {"brand":"motorola","manufacturer":"Motorola Mobility","model":"Moto Edge 60 Pro","device_code":"xt2445-4","soc":"Dimensity 8300 Extreme","screen_density":2.25,"screen_width":1220,"screen_height":2712},
-  {"brand":"motorola","manufacturer":"Motorola Mobility","model":"Moto G85","device_code":"xt2397-5","soc":"Dimensity 8200","screen_density":2.25,"screen_width":1080,"screen_height":2400},
-  {"brand":"motorola","manufacturer":"Motorola Mobility","model":"Moto G84","device_code":"xt2383-6","soc":"Dimensity 7200","screen_density":2.25,"screen_width":1080,"screen_height":2400},
-  {"brand":"sony","manufacturer":"Sony Corporation","model":"Xperia 1 VI","device_code":"a5","soc":"Snapdragon 8 Gen 3","screen_density":2.75,"screen_width":1440,"screen_height":3440},
-  {"brand":"sony","manufacturer":"Sony Corporation","model":"Xperia 5 VI","device_code":"a4","soc":"Snapdragon 8 Gen 3","screen_density":2.75,"screen_width":1440,"screen_height":3440},
-  {"brand":"sony","manufacturer":"Sony Corporation","model":"Xperia 10 VII","device_code":"a3","soc":"Snapdragon 6 Gen 3","screen_density":2.25,"screen_width":1080,"screen_height":2340},
-  {"brand":"huawei","manufacturer":"Huawei Device Co.","model":"Huawei Pura 70 Ultra","device_code":"ALN-AL10","soc":"Kirin 9020","screen_density":2.75,"screen_width":1260,"screen_height":2844},
-  {"brand":"huawei","manufacturer":"Huawei Device Co.","model":"Huawei Pura 70 Pro","device_code":"ALN-AL00","soc":"Kirin 9010","screen_density":2.75,"screen_width":1260,"screen_height":2844},
-  {"brand":"huawei","manufacturer":"Huawei Device Co.","model":"Huawei Mate 60 Pro","device_code":"MLN-AL00","soc":"Kirin 9000S","screen_density":2.75,"screen_width":1260,"screen_height":2720},
-  {"brand":"honor","manufacturer":"Honor Device Co.","model":"Honor Magic7 Pro","device_code":"MGI-AN00","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1264,"screen_height":2800},
-  {"brand":"honor","manufacturer":"Honor Device Co.","model":"Honor Magic7","device_code":"MGI-AN00","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1264,"screen_height":2800},
-  {"brand":"honor","manufacturer":"Honor Device Co.","model":"Honor X60 Pro","device_code":"HRY-LX9","soc":"Dimensity 7200X","screen_density":2.25,"screen_width":1200,"screen_height":2652},
-  {"brand":"nothing","manufacturer":"Nothing Technology","model":"Nothing Phone (3)","device_code":"nova","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1260,"screen_height":2740},
-  {"brand":"nothing","manufacturer":"Nothing Technology","model":"Nothing Phone (2a)","device_code":"nova","soc":"Dimensity 7200","screen_density":2.25,"screen_width":1084,"screen_height":2412},
-  {"brand":"asus","manufacturer":"ASUSTeK Computer","model":"ROG Phone 9 Pro","device_code":"ZS760KL","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1080,"screen_height":2400},
-  {"brand":"asus","manufacturer":"ASUSTeK Computer","model":"Zenfone 11 Ultra","device_code":"ZS790KS","soc":"Snapdragon 8 Elite","screen_density":2.75,"screen_width":1080,"screen_height":2400},
-  {"brand":"realme","manufacturer":"Realme","model":"Realme GT 6","device_code":"RMX3858","soc":"Snapdragon 8 Gen 3","screen_density":2.25,"screen_width":1264,"screen_height":2780},
-  {"brand":"realme","manufacturer":"Realme","model":"Realme 13 Pro+","device_code":"RMX3932","soc":"Dimensity 7050","screen_density":2.25,"screen_width":1080,"screen_height":2412},
-  {"brand":"realme","manufacturer":"Realme","model":"Realme C67","device_code":"RMX3810","soc":"Snapdragon 685","screen_density":2.25,"screen_width":1080,"screen_height":2400},
-  {"brand":"lg","manufacturer":"LG Electronics","model":"LG Velvet","device_code":"velvet","soc":"Snapdragon 765G","screen_density":2.25,"screen_width":1080,"screen_height":2460}
+  {"brand":"google","manufacturer":"Google","model":"Pixel 9a","device_code":"tegu","soc":"Tensor G4","launch":34,"max":36,"screen_density":2.7,"screen_width":1080,"screen_height":2424},
+  {"brand":"google","manufacturer":"Google","model":"Pixel 9","device_code":"tokay","soc":"Tensor G4","launch":34,"max":36,"screen_density":2.75,"screen_width":1080,"screen_height":2424},
+  {"brand":"google","manufacturer":"Google","model":"Pixel 9 Pro","device_code":"caiman","soc":"Tensor G4","launch":34,"max":36,"screen_density":2.75,"screen_width":1280,"screen_height":2856},
+  {"brand":"google","manufacturer":"Google","model":"Pixel 9 Pro XL","device_code":"komodo","soc":"Tensor G4","launch":34,"max":36,"screen_density":2.75,"screen_width":1344,"screen_height":2992},
+  {"brand":"google","manufacturer":"Google","model":"Pixel 8","device_code":"shiba","soc":"Tensor G3","launch":34,"max":35,"screen_density":2.75,"screen_width":1080,"screen_height":2400},
+  {"brand":"google","manufacturer":"Google","model":"Pixel 8 Pro","device_code":"husky","soc":"Tensor G3","launch":34,"max":35,"screen_density":2.75,"screen_width":1344,"screen_height":2992},
+  {"brand":"google","manufacturer":"Google","model":"Pixel 7a","device_code":"lynx","soc":"Tensor G2","launch":33,"max":35,"screen_density":2.5,"screen_width":1080,"screen_height":2400},
+  {"brand":"google","manufacturer":"Google","model":"Pixel 7","device_code":"panther","soc":"Tensor G2","launch":33,"max":35,"screen_density":2.5,"screen_width":1080,"screen_height":2400},
+  {"brand":"google","manufacturer":"Google","model":"Pixel 7 Pro","device_code":"cheetah","soc":"Tensor G2","launch":33,"max":35,"screen_density":2.5,"screen_width":1440,"screen_height":3120},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S25 Ultra","device_code":"e3q","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.6,"screen_width":1440,"screen_height":3120},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S25+","device_code":"e3s","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.6,"screen_width":1440,"screen_height":3120},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S25","device_code":"e3q","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.6,"screen_width":1080,"screen_height":2340},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S24 Ultra","device_code":"e5q","soc":"Snapdragon 8 Gen 3","launch":34,"max":36,"screen_density":2.6,"screen_width":1440,"screen_height":3120},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S24+","device_code":"e5s","soc":"Exynos 2400","launch":34,"max":36,"screen_density":2.6,"screen_width":1440,"screen_height":3120},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S24","device_code":"e5q","soc":"Exynos 2400","launch":34,"max":36,"screen_density":2.6,"screen_width":1080,"screen_height":2340},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S23 Ultra","device_code":"dm3q","soc":"Snapdragon 8 Gen 2","launch":33,"max":36,"screen_density":2.6,"screen_width":1440,"screen_height":3088},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S23+","device_code":"dm3s","soc":"Snapdragon 8 Gen 2","launch":33,"max":36,"screen_density":2.6,"screen_width":1080,"screen_height":2340},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy S23","device_code":"dm3q","soc":"Snapdragon 8 Gen 2","launch":33,"max":36,"screen_density":2.6,"screen_width":1080,"screen_height":2340},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy A56","device_code":"a56","soc":"Exynos 1580","launch":35,"max":36,"screen_density":2.25,"screen_width":1080,"screen_height":2340},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy A36","device_code":"a36","soc":"Exynos 1380","launch":35,"max":36,"screen_density":2.25,"screen_width":1080,"screen_height":2340},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy A26","device_code":"a26","soc":"Exynos 1380","launch":35,"max":36,"screen_density":2.25,"screen_width":1080,"screen_height":2340},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy Z Fold7","device_code":"fold7","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.6,"screen_width":1080,"screen_height":2520},
+  {"brand":"samsung","manufacturer":"Samsung Electronics","model":"Galaxy Z Flip7","device_code":"flip7","soc":"Exynos 2500","launch":35,"max":36,"screen_density":2.6,"screen_width":1080,"screen_height":2520},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 15 Ultra","device_code":"cassian","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.75,"screen_width":1440,"screen_height":3200},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 15 Pro","device_code":"dada","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.75,"screen_width":1440,"screen_height":3200},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 15","device_code":"dada","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.75,"screen_width":1200,"screen_height":2670},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 14 Ultra","device_code":"aurora","soc":"Snapdragon 8 Gen 3","launch":34,"max":36,"screen_density":2.75,"screen_width":1440,"screen_height":3200},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 14 Pro","device_code":"titi","soc":"Snapdragon 8 Gen 3","launch":34,"max":36,"screen_density":2.75,"screen_width":1440,"screen_height":3200},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Xiaomi 14","device_code":"titi","soc":"Snapdragon 8 Gen 3","launch":34,"max":36,"screen_density":2.75,"screen_width":1200,"screen_height":2670},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Redmi Note 14 Pro","device_code":"ruby","soc":"Dimensity 7300 Ultra","launch":34,"max":36,"screen_density":2.25,"screen_width":1220,"screen_height":2712},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Redmi Note 14","device_code":"ruby","soc":"Dimensity 7025 Ultra","launch":34,"max":35,"screen_density":2.25,"screen_width":1080,"screen_height":2400},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Redmi K80 Pro","device_code":"inui","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.75,"screen_width":1440,"screen_height":3200},
+  {"brand":"xiaomi","manufacturer":"Xiaomi Corporation","model":"Redmi K80","device_code":"inui","soc":"Snapdragon 8 Gen 3","launch":35,"max":36,"screen_density":2.75,"screen_width":1440,"screen_height":3200},
+  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus 13","device_code":"CPH2581","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.75,"screen_width":1440,"screen_height":3168},
+  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus 12","device_code":"CPH2483","soc":"Snapdragon 8 Gen 3","launch":34,"max":36,"screen_density":2.75,"screen_width":1440,"screen_height":3168},
+  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus 12R","device_code":"CPH2561","soc":"Snapdragon 8 Gen 2","launch":34,"max":36,"screen_density":2.75,"screen_width":1264,"screen_height":2780},
+  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus Nord 4","device_code":"CPH2589","soc":"Snapdragon 7+ Gen 3","launch":34,"max":36,"screen_density":2.25,"screen_width":1240,"screen_height":2772},
+  {"brand":"oneplus","manufacturer":"OnePlus","model":"OnePlus Nord CE4","device_code":"CPH2631","soc":"Snapdragon 7 Gen 3","launch":34,"max":35,"screen_density":2.25,"screen_width":1080,"screen_height":2400},
+  {"brand":"oppo","manufacturer":"OPPO","model":"OPPO Find X8 Pro","device_code":"OP5A39L1","soc":"Dimensity 9400","launch":35,"max":36,"screen_density":2.75,"screen_width":1264,"screen_height":2780},
+  {"brand":"oppo","manufacturer":"OPPO","model":"OPPO Find X8","device_code":"OP5A39L1","soc":"Dimensity 9400","launch":35,"max":36,"screen_density":2.75,"screen_width":1256,"screen_height":2760},
+  {"brand":"oppo","manufacturer":"OPPO","model":"OPPO Reno 13 Pro","device_code":"OP5E1FL1","soc":"Dimensity 8350","launch":35,"max":36,"screen_density":2.25,"screen_width":1272,"screen_height":2800},
+  {"brand":"oppo","manufacturer":"OPPO","model":"OPPO A3 Pro","device_code":"OP5D41L1","soc":"Dimensity 7050","launch":34,"max":35,"screen_density":2.25,"screen_width":1080,"screen_height":2412},
+  {"brand":"vivo","manufacturer":"Vivo","model":"Vivo X200 Pro","device_code":"PD2341","soc":"Dimensity 9400","launch":35,"max":36,"screen_density":2.75,"screen_width":1260,"screen_height":2800},
+  {"brand":"vivo","manufacturer":"Vivo","model":"Vivo X200","device_code":"PD2341","soc":"Dimensity 9400","launch":35,"max":36,"screen_density":2.75,"screen_width":1260,"screen_height":2800},
+  {"brand":"vivo","manufacturer":"Vivo","model":"Vivo S20 Pro","device_code":"V2367A","soc":"Dimensity 9300+","launch":34,"max":35,"screen_density":2.25,"screen_width":1260,"screen_height":2800},
+  {"brand":"vivo","manufacturer":"Vivo","model":"Vivo Y300","device_code":"V2354","soc":"Dimensity 7300","launch":34,"max":35,"screen_density":2.25,"screen_width":1080,"screen_height":2392},
+  {"brand":"motorola","manufacturer":"Motorola Mobility","model":"Moto X50 Ultra","device_code":"xt2417-3","soc":"Snapdragon 8s Gen 3","launch":34,"max":35,"screen_density":2.25,"screen_width":1220,"screen_height":2712},
+  {"brand":"motorola","manufacturer":"Motorola Mobility","model":"Moto Edge 60 Pro","device_code":"xt2445-4","soc":"Dimensity 8350","launch":35,"max":36,"screen_density":2.25,"screen_width":1220,"screen_height":2712},
+  {"brand":"motorola","manufacturer":"Motorola Mobility","model":"Moto G85","device_code":"xt2397-5","soc":"Snapdragon 6s Gen 3","launch":34,"max":35,"screen_density":2.25,"screen_width":1080,"screen_height":2400},
+  {"brand":"motorola","manufacturer":"Motorola Mobility","model":"Moto G84","device_code":"xt2383-6","soc":"Snapdragon 695","launch":33,"max":34,"screen_density":2.25,"screen_width":1080,"screen_height":2400},
+  {"brand":"sony","manufacturer":"Sony Corporation","model":"Xperia 1 VI","device_code":"a5","soc":"Snapdragon 8 Gen 3","launch":34,"max":36,"screen_density":2.75,"screen_width":1080,"screen_height":2340},
+  {"brand":"sony","manufacturer":"Sony Corporation","model":"Xperia 5 V","device_code":"a4","soc":"Snapdragon 8 Gen 2","launch":33,"max":35,"screen_density":2.75,"screen_width":1080,"screen_height":2520},
+  {"brand":"sony","manufacturer":"Sony Corporation","model":"Xperia 10 VII","device_code":"a3","soc":"Snapdragon 6 Gen 3","launch":35,"max":36,"screen_density":2.25,"screen_width":1080,"screen_height":2340},
+  {"brand":"honor","manufacturer":"Honor Device Co.","model":"Honor Magic7 Pro","device_code":"MGI-AN00","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.75,"screen_width":1280,"screen_height":2800},
+  {"brand":"honor","manufacturer":"Honor Device Co.","model":"Honor Magic7","device_code":"MGI-AN00","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.75,"screen_width":1264,"screen_height":2800},
+  {"brand":"honor","manufacturer":"Honor Device Co.","model":"Honor X60 Pro","device_code":"HRY-LX9","soc":"Dimensity 7025","launch":34,"max":35,"screen_density":2.25,"screen_width":1224,"screen_height":2700},
+  {"brand":"nothing","manufacturer":"Nothing Technology","model":"Nothing Phone (3)","device_code":"nova","soc":"Snapdragon 8s Gen 3","launch":35,"max":36,"screen_density":2.75,"screen_width":1260,"screen_height":2800},
+  {"brand":"nothing","manufacturer":"Nothing Technology","model":"Nothing Phone (2a)","device_code":"nova","soc":"Dimensity 7200 Pro","launch":34,"max":35,"screen_density":2.25,"screen_width":1084,"screen_height":2412},
+  {"brand":"asus","manufacturer":"ASUSTeK Computer","model":"ROG Phone 9 Pro","device_code":"ZS760KL","soc":"Snapdragon 8 Elite","launch":35,"max":36,"screen_density":2.75,"screen_width":1080,"screen_height":2400},
+  {"brand":"asus","manufacturer":"ASUSTeK Computer","model":"Zenfone 11 Ultra","device_code":"ZS790KS","soc":"Snapdragon 8 Gen 3","launch":34,"max":35,"screen_density":2.75,"screen_width":1080,"screen_height":2400},
+  {"brand":"realme","manufacturer":"Realme","model":"Realme GT 6","device_code":"RMX3858","soc":"Snapdragon 8s Gen 3","launch":34,"max":35,"screen_density":2.25,"screen_width":1264,"screen_height":2780},
+  {"brand":"realme","manufacturer":"Realme","model":"Realme 13 Pro+","device_code":"RMX3932","soc":"Snapdragon 7s Gen 2","launch":34,"max":35,"screen_density":2.25,"screen_width":1080,"screen_height":2412},
+  {"brand":"realme","manufacturer":"Realme","model":"Realme C67","device_code":"RMX3810","soc":"Snapdragon 685","launch":34,"max":34,"screen_density":2.25,"screen_width":1080,"screen_height":2400}
 ];
 
 /* 机型 → 屏幕对角线英寸：用于由分辨率反推物理 xdpi/ydpi，
@@ -132,7 +125,7 @@ const PHONES = [
 const SCREEN_SIZE_BY_MODEL = {
   'Pixel 9a': 6.3, 'Pixel 9': 6.3, 'Pixel 9 Pro': 6.3, 'Pixel 9 Pro XL': 6.8,
   'Pixel 8': 6.2, 'Pixel 8 Pro': 6.7, 'Pixel 7a': 6.1, 'Pixel 7': 6.3,
-  'Pixel 7 Pro': 6.7, 'Pixel 6a': 6.1, 'Pixel 6': 6.4, 'Pixel 6 Pro': 6.7,
+  'Pixel 7 Pro': 6.7,
   'Galaxy S25 Ultra': 6.9, 'Galaxy S25+': 6.7, 'Galaxy S25': 6.2,
   'Galaxy S24 Ultra': 6.8, 'Galaxy S24+': 6.7, 'Galaxy S24': 6.2,
   'Galaxy S23 Ultra': 6.8, 'Galaxy S23+': 6.6, 'Galaxy S23': 6.1,
@@ -148,12 +141,11 @@ const SCREEN_SIZE_BY_MODEL = {
   'OPPO Reno 13 Pro': 6.83, 'OPPO A3 Pro': 6.7,
   'Vivo X200 Pro': 6.78, 'Vivo X200': 6.67, 'Vivo S20 Pro': 6.78, 'Vivo Y300': 6.77,
   'Moto X50 Ultra': 6.7, 'Moto Edge 60 Pro': 6.7, 'Moto G85': 6.67, 'Moto G84': 6.55,
-  'Xperia 1 VI': 6.5, 'Xperia 5 VI': 6.1, 'Xperia 10 VII': 6.1,
-  'Huawei Pura 70 Ultra': 6.8, 'Huawei Pura 70 Pro': 6.8, 'Huawei Mate 60 Pro': 6.82,
+  'Xperia 1 VI': 6.5, 'Xperia 5 V': 6.1, 'Xperia 10 VII': 6.1,
   'Honor Magic7 Pro': 6.8, 'Honor Magic7': 6.78, 'Honor X60 Pro': 6.78,
   'Nothing Phone (3)': 6.67, 'Nothing Phone (2a)': 6.7,
   'ROG Phone 9 Pro': 6.78, 'Zenfone 11 Ultra': 6.78,
-  'Realme GT 6': 6.78, 'Realme 13 Pro+': 6.7, 'Realme C67': 6.72, 'LG Velvet': 6.8
+  'Realme GT 6': 6.78, 'Realme 13 Pro+': 6.7, 'Realme C67': 6.72
 };
 const DEFAULT_SCREEN_SIZE = 6.6;
 
@@ -196,7 +188,18 @@ const SOC_GPU_MAP = {
   'Tensor G1': { gpu: 'Mali-G78', vendor: 'ARM', gl: '3.2', gl_version: 'v1.r32p0-00eac0.71182211698962859752873973789917', vulkan: '1.1', frequency: [500000, 600000, 750000, 900000, 1050000, 1200000, 1350000, 1500000, 1650000, 1800000, 1950000, 2100000, 2250000, 2400000, 2550000, 2700000, 2850000] },
   'Kirin 9020': { gpu: 'Maleoon 910', vendor: 'Huawei', gl: '3.2', gl_version: 'v100.0.0', vulkan: '1.3', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2610000] },
   'Kirin 9010': { gpu: 'Maleoon 910', vendor: 'Huawei', gl: '3.2', gl_version: 'v100.0.0', vulkan: '1.2', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2500000] },
-  'Kirin 9000S': { gpu: 'Maleoon 910', vendor: 'Huawei', gl: '3.2', gl_version: 'v100.0.0', vulkan: '1.1', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000] }
+  'Kirin 9000S': { gpu: 'Maleoon 910', vendor: 'Huawei', gl: '3.2', gl_version: 'v100.0.0', vulkan: '1.1', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000] },
+  'Snapdragon 8s Gen 3': { gpu: 'Adreno 735', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0530.0', vulkan: '1.3', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000, 2700000, 3000000, 3300000] },
+  'Snapdragon 7 Gen 3': { gpu: 'Adreno 720', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0530.0', vulkan: '1.3', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000, 2610000] },
+  'Snapdragon 7s Gen 2': { gpu: 'Adreno 710', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0530.0', vulkan: '1.3', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000] },
+  'Snapdragon 6s Gen 3': { gpu: 'Adreno 619', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0400.0', vulkan: '1.1', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2200000] },
+  'Snapdragon 695': { gpu: 'Adreno 619', vendor: 'Qualcomm', gl: '3.2', gl_version: 'V@0400.0', vulkan: '1.1', frequency: [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2200000] },
+  'Dimensity 9300+': { gpu: 'Immortalis-G720', vendor: 'ARM', gl: '3.2', gl_version: 'v1.r0p0-00eac0.843348195f462f29a4f9b602973186d8', vulkan: '1.2', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2600000, 2800000, 3000000, 3250000] },
+  'Dimensity 7200 Pro': { gpu: 'Mali-G610 MC4', vendor: 'ARM', gl: '3.2', gl_version: 'v1.r0p0-00eac0.73a461649f2e45580f51577000675708', vulkan: '1.3', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000] },
+  'Dimensity 7025 Ultra': { gpu: 'Mali-G57 MC2', vendor: 'ARM', gl: '3.2', gl_version: 'v1.r0p0-00eac0.50c2137f39b414720660e9353405090b', vulkan: '1.2', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000] },
+  'Dimensity 7025': { gpu: 'Mali-G57 MC2', vendor: 'ARM', gl: '3.2', gl_version: 'v1.r0p0-00eac0.50c2137f39b414720660e9353405090b', vulkan: '1.2', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000] },
+  'Exynos 1580': { gpu: 'Xclipse 540', vendor: 'Samsung', gl: '3.2', gl_version: 'v1.r20p0-01e10.d39c8ba901a552ad', vulkan: '1.3', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2500000] },
+  'Exynos 2500': { gpu: 'Xclipse 950', vendor: 'Samsung', gl: '3.2', gl_version: 'v1.r20p0-01e10.d39c8ba901a552ad', vulkan: '1.3', frequency: [400000, 600000, 800000, 1000000, 1200000, 1400000, 1600000, 1800000, 2000000, 2200000, 2400000, 2600000, 2800000, 3000000, 3200000] }
 };
 
 /* SoC → 逻辑核心数 / 内存档位 / 传感器档位（与 SOC_GPU_MAP 一一对应，保证硬件信息自洽） */
@@ -228,7 +231,18 @@ const SOC_SPEC_MAP = {
   'Tensor G1':             { cores: 8,  ram: [8, 12],  tier: 'flagship' },
   'Kirin 9020':            { cores: 12, ram: [12, 16], tier: 'flagship' },
   'Kirin 9010':            { cores: 12, ram: [8, 12],  tier: 'flagship' },
-  'Kirin 9000S':           { cores: 12, ram: [8, 12],  tier: 'flagship' }
+  'Kirin 9000S':           { cores: 12, ram: [8, 12],  tier: 'flagship' },
+  'Snapdragon 8s Gen 3':   { cores: 8,  ram: [12, 16], tier: 'flagship' },
+  'Snapdragon 7 Gen 3':    { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Snapdragon 7s Gen 2':   { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Snapdragon 6s Gen 3':   { cores: 8,  ram: [6, 8],   tier: 'entry' },
+  'Snapdragon 695':        { cores: 8,  ram: [6, 8],   tier: 'entry' },
+  'Dimensity 9300+':       { cores: 8,  ram: [12, 16], tier: 'flagship' },
+  'Dimensity 7200 Pro':    { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Dimensity 7025 Ultra':  { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Dimensity 7025':        { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Exynos 1580':           { cores: 8,  ram: [8, 12],  tier: 'mid' },
+  'Exynos 2500':           { cores: 10, ram: [12],     tier: 'flagship' }
 };
 
 /* 传感器清单：与机型档次一致，不出现平板 / 折叠外屏等机型专属项 */
@@ -269,13 +283,24 @@ const CPU_IDENTITY = {
   'Tensor G1':              { implementer: '0x41', parts: ['0xd44', '0xd47', '0xd46'] },
   'Kirin 9020':             { implementer: '0x48', parts: ['0xd42', '0xd43'] },
   'Kirin 9010':             { implementer: '0x48', parts: ['0xd42', '0xd43'] },
-  'Kirin 9000S':            { implementer: '0x48', parts: ['0xd42', '0xd43'] }
+  'Kirin 9000S':            { implementer: '0x48', parts: ['0xd42', '0xd43'] },
+  'Snapdragon 8s Gen 3':    { implementer: '0x41', parts: ['0xd82', '0xd81', '0xd80'] },
+  'Snapdragon 7 Gen 3':     { implementer: '0x41', parts: ['0xd4e', '0xd4d', '0xd46'] },
+  'Snapdragon 7s Gen 2':    { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Snapdragon 6s Gen 3':    { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Snapdragon 695':         { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Dimensity 9300+':        { implementer: '0x41', parts: ['0xd4e', '0xd4d', '0xd46'] },
+  'Dimensity 7200 Pro':     { implementer: '0x41', parts: ['0xd4d', '0xd46'] },
+  'Dimensity 7025 Ultra':   { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Dimensity 7025':         { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Exynos 1580':            { implementer: '0x41', parts: ['0xd41', '0xd03'] },
+  'Exynos 2500':            { implementer: '0x41', parts: ['0xd82', '0xd81', '0xd80'] }
 };
 
 const DEFAULT_SOC = 'Snapdragon 8 Gen 3';
 
 /* Widevine CDM 大版本随 Android 版本演进（均为官方真实版本号） */
-const DRM_VERSION_BY_ANDROID = { '13': '15.0.0', '14': '16.0.0', '15': '17.0.0' };
+const DRM_VERSION_BY_ANDROID = { '13': '15.0.0', '14': '16.0.0', '15': '17.0.0', '16': '18.0.0' };
 
 /* DRM 安全级别必须与机型档次一致：旗舰普遍 L1，中低端为 L3；
  * Pixel 走 Google 软件 CDM（L3），避免出现 "Google + L1" 的冲突组合 */
@@ -583,6 +608,21 @@ function base64UrlEncode(bytes) {
  * 初始化状态（对应 DataGenerator::__construct）
  * ============================================================ */
 
+/* 按机型「出厂版本 ~ 可升级上限」取系统版本：
+ * 绝不允许输出低于出厂的 Android（如 Xiaomi 15 出厂 15，不会出现 13） */
+function pickApiLevel(phone) {
+  const launch = Number(phone.launch) || 34;
+  const max = Number(phone.max) || launch;
+  const lo = Math.max(33, launch);
+  const hi = Math.min(36, max);
+  if (hi >= lo) {
+    const candidates = [];
+    for (let v = lo; v <= hi; v++) candidates.push(v);
+    return randChoice(candidates);
+  }
+  return Math.max(33, Math.min(36, launch));
+}
+
 function createGeneratorState(phone, apiLevel, geo) {
   return {
     phone: phone,
@@ -601,6 +641,7 @@ function getAndroidVersionName(apiLevel) {
   if (apiLevel === 33) return '13';
   if (apiLevel === 34) return '14';
   if (apiLevel === 35) return '15';
+  if (apiLevel === 36) return '16';
   return '14';
 }
 
@@ -612,6 +653,7 @@ function generateBuildId(apiLevel) {
   let prefixes;
   if (apiLevel === 33) prefixes = ['TQ2A', 'TP1A', 'TR1A'];
   else if (apiLevel === 35) prefixes = ['AP1A', 'BP1A', 'CP1A'];
+  else if (apiLevel === 36) prefixes = ['BP2A', 'CP2A', 'DP2A'];
   else prefixes = ['UP1A', 'UQ1A', 'UR1A'];
 
   const prefix = randChoice(prefixes);
@@ -742,14 +784,30 @@ function generateShortSerial() {
   return serial;
 }
 
-function generateBasebandVersion(brand) {
+function generateBasebandVersion(brand, socModel) {
   const brandLower = String(brand).toLowerCase();
+  const soc = String(socModel || '');
+  /* 三星基带/固件串统一为 S<型号>BXXU<版本>AXK<补丁> 形式 */
+  if (brandLower === 'samsung') {
+    return 'S' + randInt(900, 999) + 'BXXU' + randInt(1, 9) + 'AXK' + randInt(1, 9);
+  }
+  if (/^Tensor/.test(soc)) {
+    const d = new Date(Date.now() - randInt(0, 300 * 86400) * 1000);
+    const yy = String(d.getUTCFullYear()).slice(-2);
+    const mm = padLeft(String(d.getUTCMonth() + 1), 2, '0');
+    const dd = padLeft(String(d.getUTCDate()), 2, '0');
+    return 'g' + randChoice(['5300b', '5300c', '5400b']) + '-' + yy + mm + dd + '-' + padLeft(String(randInt(1, 12)), 2, '0');
+  }
+  if (/^Snapdragon/.test(soc)) {
+    return randChoice(['MPSS.DE.3.1.c1-00039', 'MPSS.DE.3.1.c2-00057', 'MPSS.DE.3.2-00121']);
+  }
+  if (/^Dimensity/.test(soc)) {
+    return 'MOLY.LR12A.R3.MP.V' + randInt(150, 220) + '.5.P' + randInt(1, 9);
+  }
   if (Object.prototype.hasOwnProperty.call(BASEBANDS_BY_BRAND, brandLower)) {
     return randChoice(BASEBANDS_BY_BRAND[brandLower]);
   }
-  const now = new Date();
-  const ymd = ymdFromDate(now);
-  return 'BB' + ymd + '-' + String(randInt(1, 99)) + '-' + String(randInt(1, 99));
+  return 'unknown';
 }
 
 function generatePhoneNumber(g) {
@@ -1252,7 +1310,7 @@ function generate(g) {
   const macAddress = generateMacAddress();
   const androidId = generateAndroidId();
   const serialNumber = generateSerialNumber(brand);
-  const basebandVersion = generateBasebandVersion(brand);
+  const basebandVersion = generateBasebandVersion(brand, p.soc || DEFAULT_SOC);
   const bluetoothMac = generateMacAddress();
   const phoneNumber = generatePhoneNumber(g);
   const batteryInfo = generateBatteryInfo();
@@ -1297,7 +1355,7 @@ function generate(g) {
     SDK_FINGERPRINT: sdkFingerprint,
     UUID: uuid,
     SECURITY_PATCH: securityPatch,
-    FIRST_API_LEVEL: String(g.apiLevel),
+    FIRST_API_LEVEL: String(g.phone.launch || g.apiLevel),
     DRM_SECURITY_LEVEL: drmSecurityLevel,
     SERIAL: serial,
     RADIO: basebandVersion,
@@ -1468,8 +1526,8 @@ function validateFormats(copgVd) {
 
   if (isSet(copgVd, 'FIRST_API_LEVEL')) {
     const apiLevel = parseInt(String(copgVd.FIRST_API_LEVEL), 10);
-    if (apiLevel !== 33 && apiLevel !== 34 && apiLevel !== 35) {
-      errors.push('FIRST_API_LEVEL must be 33, 34, or 35, got: ' + copgVd.FIRST_API_LEVEL);
+    if (apiLevel !== 33 && apiLevel !== 34 && apiLevel !== 35 && apiLevel !== 36) {
+      errors.push('FIRST_API_LEVEL must be 33, 34, 35 or 36, got: ' + copgVd.FIRST_API_LEVEL);
     }
   }
 
@@ -1795,8 +1853,12 @@ async function handleRequest(request, env) {
   try {
     await refreshWebViewVersions();
 
-    const phone = randChoice(PHONE_DB);
-    const apiLevel = randChoice(ANDROID_VERSIONS);
+    const phone = Object.assign({}, randChoice(PHONE_DB));
+    /* 自检：SoC 必须在 GPU / 规格 / CPU 三张表中都有映射，否则回退到默认平台 */
+    if (!SOC_GPU_MAP[phone.soc] || !SOC_SPEC_MAP[phone.soc] || !CPU_IDENTITY[phone.soc]) {
+      phone.soc = DEFAULT_SOC;
+    }
+    const apiLevel = pickApiLevel(phone);
     const geo = await resolveGeo(request);
 
     const g = createGeneratorState(phone, apiLevel, geo);

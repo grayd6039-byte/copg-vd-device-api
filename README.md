@@ -9,7 +9,7 @@
 - **严格遵循 COPG-VD.json 规范**：保留模板全部字段（BRAND、DEVICE、MANUFACTURER、MODEL、FINGERPRINT、PRODUCT、BOOTLOADER、BOARD、HARDWARE、DISPLAY、ID、HOST、INCREMENTAL、TIMESTAMP、PREVIEW_SDK、USER、SDK_FINGERPRINT、UUID、SECURITY_PATCH、FIRST_API_LEVEL、DRM_SECURITY_LEVEL）
 - **强制新增设备属性**：IMEI（Luhn 校验合法）、IMSI、ICCID（19-20 位，89 开头）、MAC 地址、ANDROID_ID（16 位十六进制）、SN 序列号、基带版本、电池信息、蓝牙 MAC、本机电话号码
 - **数据源**：内置精选安卓手机数据库 + GSMArena 爬虫（带 Cloudflare 绕过）
-- **Android 版本**：只随机生成 Android 13 (API 33) / 14 (API 34) / 15 (API 35)
+- **Android 版本**：只生成 Android 13 (API 33) / 14 (API 34) / 15 (API 35) / 16 (API 36)，且按机型出厂版本限制下限（如 Xiaomi 15 出厂 15，只会输出 15/16，绝不会输出 13）
 - **参数自洽**：指纹、SDK 版本、安全补丁、品牌机型匹配，无矛盾冲突
 - **每次调用返回全新数据**：所有随机值独立生成
 
@@ -87,7 +87,7 @@ Cloudflare Workers 不支持 PHP，因此 `cloudflare/worker.js` 是用纯 JS �
 
 ```
 cloudflare/
-├── worker.js        # 单文件 Worker（内联 70 条手机数据 + 生成器 + 校验器）
+├── worker.js        # 单文件 Worker（内联 62 条手机数据 + 生成器 + 校验器）
 └── wrangler.toml    # name = "mecg-so-device-api", main = "worker.js"
 ```
 
@@ -187,7 +187,7 @@ Workers 版本的处理顺序：
 
 ### 与 PHP 版本的行为差异
 
-1. 不移植 GSMArena 爬虫与 `phones_cache.json` 磁盘缓存（Workers 无文件系统），始终使用内联的 70 条手机数据。
+1. 不移植 GSMArena 爬虫与 `phones_cache.json` 磁盘缓存（Workers 无文件系统），改用按 GSMArena 参数核验过的内联机型库（62 条，含出厂 Android 版本 `launch` 与可升级上限 `max`）。
 2. `phone.latitude` / `phone.longitude` 由地理接口 / `request.cf` 填充（PHP 恒为空）。
 3. 随机数改用 `crypto.getRandomValues` + 拒绝采样，分布与 PHP `random_int` 一致（不使用 `Math.random`）。
 4. JSON 格式化：PHP 会转义 `/`（`\/`），Worker 不转义；解析结果完全相同。
@@ -341,6 +341,8 @@ curl -s "https://your-domain.com/api.php"
 - `Sensors` 按机型档次给出：旗舰 9 项（含气压计、计步器、霍尔），中端 6 项，入门 4 项
 - `xdpi` / `ydpi` 是物理像素密度，由分辨率与机型真实对角线尺寸反推，因此与 `dpi`（逻辑密度 = density×160）不相等属正常；物理尺寸始终落在 6.1-6.9 英寸，不会被识别为平板
 - 机型库只保留手机，`iPad` / `iPhone` / 平板（Tab/Pad/Tablet）会在加载时被过滤
+- 机型参数（品牌、厂商、型号、SoC、GPU、内存、屏幕、基带）对照 GSMArena 机型页核验；出厂 Android 版本写在 `launch`，可升级上限写在 `max`
+- 已移除 HarmonyOS 机型（华为，非 Android）、出厂低于 Android 13 的机型（Pixel 6 系列）与已退出市场的机型（LG Velvet），保证输出系统版本始终在 Android 13-16
 
 ### Web 指纹避坑
 
